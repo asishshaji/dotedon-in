@@ -41,3 +41,22 @@ func (uR userRepo) CheckUserExistsWithUserName(ctx context.Context, username str
 	}
 	return true
 }
+
+func (uR userRepo) GetUserByUsername(ctx context.Context, username string) *models.User {
+	user := new(models.User)
+	res := uR.userCollection.FindOne(ctx, bson.M{"username": username})
+
+	if res.Err() == mongo.ErrNoDocuments {
+		uR.l.Println("Invalid username and Password")
+		return nil
+	}
+
+	err := res.Decode(user)
+	if err != nil {
+		uR.l.Println("Error decoding user")
+		return nil
+	}
+
+	return user
+
+}

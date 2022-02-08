@@ -40,6 +40,8 @@ type User struct {
 }
 
 var ErrUserExists = fmt.Errorf("User already exists")
+var ErrInvalidCredentials = fmt.Errorf("Invalid credentials")
+var ErrNoUserExists = fmt.Errorf("No user with given username")
 
 func (user *User) ValidateUser() error {
 	validate := validator.New()

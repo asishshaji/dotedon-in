@@ -31,6 +31,7 @@ func (uC UserController) RegisterUser(c echo.Context) error {
 		return echo.ErrBadRequest
 
 	}
+
 	err := uC.userService.RegisterUser(c.Request().Context(), &userModel)
 
 	if err != nil {
@@ -42,4 +43,18 @@ func (uC UserController) RegisterUser(c echo.Context) error {
 	return c.JSON(http.StatusCreated, map[string]string{
 		"message": "created user",
 	})
+}
+
+func (uC UserController) LoginUser(c echo.Context) error {
+	username := c.FormValue("username")
+	password := c.FormValue("password")
+
+	token, err := uC.userService.LoginUser(c.Request().Context(), username, password)
+
+	if err != nil {
+		return echo.ErrForbidden
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{"token": token})
+
 }

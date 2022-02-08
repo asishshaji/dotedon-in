@@ -9,4 +9,5 @@ import (
 type IUserAuthenticationRepository interface {
 	RegisterUser(context.Context, *models.User) error
 	CheckUserExistsWithUserName(ctx context.Context, username string) bool
+	GetUserByUsername(ctx context.Context, username string) *models.User
 }
