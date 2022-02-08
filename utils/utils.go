@@ -24,7 +24,7 @@ func LoadEnv(l *log.Logger) *EnvironmentConfig {
 	}
 
 	return &EnvironmentConfig{
-		ServerPort: os.Getenv("PORT"),
+		ServerPort: os.Getenv("SERVER_PORT"),
 		DBURL:      os.Getenv("DB_URL"),
 		DBName:     os.Getenv("DB_NAME"),
 		l:          l,
@@ -53,7 +53,7 @@ func (env *EnvironmentConfig) ConnectToDB() *mongo.Database {
 		env.l.Fatalln(err)
 	}
 
-	env.l.Println("Connect to db")
+	env.l.Println("Connected to db")
 
 	return client.Database(env.DBName)
 

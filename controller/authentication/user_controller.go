@@ -31,7 +31,13 @@ func (uC UserController) RegisterUser(c echo.Context) error {
 		return echo.ErrBadRequest
 
 	}
-	uC.userService.RegisterUser(c.Request().Context(), &userModel)
+	err := uC.userService.RegisterUser(c.Request().Context(), &userModel)
+
+	if err != nil {
+		uC.l.Println(err)
+		return echo.ErrBadRequest
+
+	}
 
 	return c.JSON(http.StatusCreated, map[string]string{
 		"message": "created user",
