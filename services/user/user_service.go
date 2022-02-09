@@ -9,7 +9,7 @@ import (
 	"github.com/asishshaji/dotedon-api/models"
 	user_repository "github.com/asishshaji/dotedon-api/repositories/user"
 	"github.com/asishshaji/dotedon-api/utils"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
