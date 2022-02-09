@@ -7,11 +7,15 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type Response struct {
+	Message interface{} `json:"message"`
+}
+
 type Gender int32
 
 const (
-	MALE   Gender = 0
-	FEMALE Gender = 1
+	MALE   Gender = 1
+	FEMALE Gender = 2
 )
 
 type User struct {
@@ -19,9 +23,9 @@ type User struct {
 	FirstName        string             `json:"first_name" validate:"required"`
 	LastName         string             `json:"last_name" validate:"required"`
 	MiddleName       string             `json:"middle_name"`
-	CreatedAt        primitive.DateTime `json:"created_at"`
-	UpdatedAt        primitive.DateTime `json:"updated_at"`
-	Password         string             `json:"-"`
+	CreatedAt        primitive.DateTime `json:"-"`
+	UpdatedAt        primitive.DateTime `json:"-"`
+	Password         string             `json:"password" validate:"required,min=4"`
 	DOB              string             `json:"dob" validate:"required"`
 	Gender           Gender             `json:"gender" validate:"required"`
 	PhoneNumber      string             `json:"phone_number" validate:"required"`

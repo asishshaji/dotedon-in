@@ -1,0 +1,82 @@
+definitions:
+  models.User:
+    properties:
+      college:
+        type: string
+      country:
+        type: string
+      course:
+        type: string
+      course_ending_date:
+        type: string
+      date_of_joining:
+        type: string
+      district:
+        type: string
+      dob:
+        type: string
+      first_name:
+        type: string
+      gender:
+        type: integer
+      has_arrears:
+        type: boolean
+      last_name:
+        type: string
+      middle_name:
+        type: string
+      phone_number:
+        type: string
+      phone_number_alt:
+        type: string
+      place:
+        type: string
+      semester:
+        type: string
+      specialization:
+        type: string
+      state:
+        type: string
+      username:
+        type: string
+    required:
+    - college
+    - country
+    - course
+    - district
+    - dob
+    - first_name
+    - gender
+    - has_arrears
+    - last_name
+    - phone_number
+    - place
+    - semester
+    - specialization
+    - state
+    - username
+    type: object
+info:
+  contact: {}
+  version: "1.0"
+paths:
+  /user:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User body
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Registers user
+swagger: "2.0"
