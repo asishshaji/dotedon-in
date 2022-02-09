@@ -6,6 +6,7 @@ import (
 
 	"github.com/asishshaji/dotedon-api/models"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -82,4 +83,26 @@ func (uR userRepo) GetMentors(ctx context.Context) ([]*models.MentorDTO, error) 
 
 	return mentors, nil
 
+}
+
+func (uR userRepo) AddMentorToUser(ctx context.Context, userId primitive.ObjectID, mentorId primitive.ObjectID) error {
+
+	options := bson.M{
+		"$addToSet": bson.M{
+			"mentors": mentorId,
+		},
+	}
+
+	res, err := uR.userCollection.UpdateByID(ctx, userId, options)
+	if err != nil {
+		uR.l.Println(err)
+		return err
+	}
+
+	if res.MatchedCount == 0 {
+		uR.l.Println("No user found with id:", userId)
+		return models.ErrNoUserWithIdExists
+	}
+
+	return nil
 }

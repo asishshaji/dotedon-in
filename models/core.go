@@ -19,6 +19,7 @@ const (
 )
 
 type User struct {
+	ID               primitive.ObjectID   `bson:"_id" json:"_id"`
 	Username         string               `json:"username" validate:"required"`
 	FirstName        string               `json:"first_name" validate:"required"`
 	LastName         string               `json:"last_name" validate:"required"`
@@ -47,6 +48,7 @@ type User struct {
 var ErrUserExists = fmt.Errorf("User already exists")
 var ErrInvalidCredentials = fmt.Errorf("Invalid credentials")
 var ErrNoUserExists = fmt.Errorf("No user with given username")
+var ErrNoUserWithIdExists = fmt.Errorf("No user with id exists")
 
 func (user *User) ValidateUser() error {
 	validate := validator.New()
