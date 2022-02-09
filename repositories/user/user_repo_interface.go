@@ -1,4 +1,4 @@
-package authentication_repository
+package user_repository
 
 import (
 	"context"
@@ -6,8 +6,9 @@ import (
 	"github.com/asishshaji/dotedon-api/models"
 )
 
-type IUserAuthenticationRepository interface {
+type IUserRepository interface {
 	RegisterUser(context.Context, *models.User) error
 	CheckUserExistsWithUserName(ctx context.Context, username string) bool
 	GetUserByUsername(ctx context.Context, username string) *models.User
+	GetMentors(ctx context.Context) ([]*models.MentorDTO, error)
 }

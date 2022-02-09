@@ -1,4 +1,4 @@
-package authentication_repository
+package user_repository
 
 import (
 	"context"
@@ -10,14 +10,16 @@ import (
 )
 
 type userRepo struct {
-	userCollection *mongo.Collection
-	l              *log.Logger
+	userCollection   *mongo.Collection
+	mentorCollection *mongo.Collection
+	l                *log.Logger
 }
 
-func NewUserAuthRepo(l *log.Logger, db *mongo.Database) IUserAuthenticationRepository {
+func NewUserAuthRepo(l *log.Logger, db *mongo.Database) IUserRepository {
 	return userRepo{
-		userCollection: db.Collection("users"),
-		l:              l,
+		userCollection:   db.Collection("users"),
+		mentorCollection: db.Collection("mentors"),
+		l:                l,
 	}
 }
 
@@ -58,5 +60,26 @@ func (uR userRepo) GetUserByUsername(ctx context.Context, username string) *mode
 	}
 
 	return user
+
+}
+
+func (uR userRepo) GetMentors(ctx context.Context) ([]*models.MentorDTO, error) {
+
+	mentors := []*models.MentorDTO{}
+
+	cursor, err := uR.mentorCollection.Find(ctx, bson.M{})
+
+	if err != nil {
+		uR.l.Fatalln(err)
+
+		return nil, err
+	}
+
+	if err = cursor.All(ctx, &mentors); err != nil {
+		uR.l.Fatalln(err)
+		return nil, err
+	}
+
+	return mentors, nil
 
 }
