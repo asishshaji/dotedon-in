@@ -1,5 +1,4 @@
 [x] Authentication
-[] Swagger
 [] Mentor creation
-[] Getting Mentors
+[x] Getting Mentors
 [] Saving mentor to user

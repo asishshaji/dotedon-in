@@ -9,6 +9,7 @@ import (
 
 	"github.com/asishshaji/dotedon-api/models"
 	user_service "github.com/asishshaji/dotedon-api/services/user"
+	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -93,4 +94,23 @@ func (uC UserController) GetMentors(c echo.Context) error {
 		})
 	}
 	return c.JSON(http.StatusOK, responseDtos)
+}
+
+func (uC UserController) AddMentorToUser(c echo.Context) error {
+	// change updated time of user
+
+	mentorId := c.FormValue("mentor_id")
+
+	mentorObjId, err := primitive.ObjectIDFromHex(mentorId)
+
+	if err != nil {
+		uC.l.Println(err)
+		return err
+	}
+
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*user_service.Claims)
+	uC.l.Println(claims.UserId)
+	uC.userService.AddMentorToUser(c.Request().Context(), claims.UserId, mentorObjId)
+	return nil
 }

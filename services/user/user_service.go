@@ -10,7 +10,13 @@ import (
 	user_repository "github.com/asishshaji/dotedon-api/repositories/user"
 	"github.com/asishshaji/dotedon-api/utils"
 	"github.com/dgrijalva/jwt-go"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+type Claims struct {
+	UserId primitive.ObjectID `json:"id"`
+	jwt.StandardClaims
+}
 
 type UserService struct {
 	userRepo user_repository.IUserRepository
@@ -45,6 +51,8 @@ func (authService UserService) RegisterUser(ctx context.Context, user *models.Us
 	}
 
 	user.Password = hashedPassword
+	user.ID = primitive.NewObjectIDFromTimestamp(time.Now())
+	user.Mentors = make([]primitive.ObjectID, 0)
 
 	err = authService.userRepo.RegisterUser(ctx, user)
 	if err != nil {
@@ -66,12 +74,14 @@ func (authService UserService) LoginUser(ctx context.Context, username, password
 		return "", models.ErrInvalidCredentials
 	}
 
-	tokenMethod := jwt.New(jwt.SigningMethodHS256)
+	claims := &Claims{
+		user.ID,
+		jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
+		},
+	}
 
-	claims := tokenMethod.Claims.(jwt.MapClaims)
-	claims["username"] = username
-	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
-
+	tokenMethod := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	t, err := tokenMethod.SignedString([]byte(os.Getenv("JWT_SECRET")))
 
 	if err != nil {
@@ -96,4 +106,12 @@ func (authService UserService) GetMentors(ctx context.Context) ([]*models.Mentor
 	}
 
 	return mentorResponses, nil
+}
+
+func (authService UserService) AddMentorToUser(ctx context.Context, userId, mentorId primitive.ObjectID) error {
+	err := authService.userRepo.AddMentorToUser(ctx, userId, mentorId)
+	if err != nil {
+		return err
+	}
+	return nil
 }
