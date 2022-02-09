@@ -4,8 +4,14 @@ import (
 	"fmt"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/golang-jwt/jwt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+type Claims struct {
+	UserId primitive.ObjectID `json:"id"`
+	jwt.StandardClaims
+}
 
 type Response struct {
 	Message interface{} `json:"message"`

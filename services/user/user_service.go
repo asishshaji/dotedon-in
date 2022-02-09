@@ -13,11 +13,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type Claims struct {
-	UserId primitive.ObjectID `json:"id"`
-	jwt.StandardClaims
-}
-
 type UserService struct {
 	userRepo user_repository.IUserRepository
 	l        *log.Logger
@@ -74,7 +69,7 @@ func (authService UserService) LoginUser(ctx context.Context, username, password
 		return "", models.ErrInvalidCredentials
 	}
 
-	claims := &Claims{
+	claims := &models.Claims{
 		user.ID,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),

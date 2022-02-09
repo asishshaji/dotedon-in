@@ -8,7 +8,7 @@ import (
 	"time"
 
 	user_controller "github.com/asishshaji/dotedon-api/controller/user"
-	user_service "github.com/asishshaji/dotedon-api/services/user"
+	"github.com/asishshaji/dotedon-api/models"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -24,16 +24,16 @@ func NewApp(port string, userController user_controller.IUserController) *App {
 	uG := e.Group("/user")
 	uG.POST("", userController.RegisterUser)
 	uG.POST("/login", userController.LoginUser)
-	uG.GET("/mentors", userController.GetMentors)
-
-	r := e.Group("/restricted")
 
 	config := middleware.JWTConfig{
-		Claims:     &user_service.Claims{},
+		Claims:     &models.Claims{},
 		SigningKey: []byte(os.Getenv("JWT_SECRET")),
 	}
-	r.Use(middleware.JWTWithConfig(config))
-	r.POST("/mentors", userController.AddMentorToUser)
+
+	uG.Use(middleware.JWTWithConfig(config))
+
+	uG.GET("/mentors", userController.GetMentors)
+	uG.POST("/mentors", userController.AddMentorToUser)
 
 	return &App{
 		app:  e,
