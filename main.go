@@ -10,6 +10,8 @@ import (
 	"github.com/asishshaji/dotedon-api/utils"
 )
 
+// @version  1.0
+
 func main() {
 
 	logger := log.New(os.Stdout, "dotedon-api", log.LstdFlags)

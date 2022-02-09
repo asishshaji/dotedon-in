@@ -3,6 +3,7 @@ package authentication_service
 import (
 	"context"
 	"log"
+	"os"
 	"time"
 
 	"github.com/asishshaji/dotedon-api/models"
@@ -25,6 +26,17 @@ func NewAuthenticationService(l *log.Logger, uR authentication_repository.IUserA
 
 func (authService AuthenticationService) RegisterUser(ctx context.Context, user *models.User) error {
 
+	userExists := authService.userRepo.CheckUserExistsWithUserName(ctx, user.Username)
+	if userExists {
+		return models.ErrUserExists
+	}
+
+	err := user.ValidateUser()
+	if err != nil {
+		authService.l.Println("Error validating user model", err)
+		return err
+	}
+
 	hashedPassword, err := utils.HashPassword(user.Password)
 
 	if err != nil {
@@ -33,17 +45,6 @@ func (authService AuthenticationService) RegisterUser(ctx context.Context, user 
 	}
 
 	user.Password = hashedPassword
-
-	userExists := authService.userRepo.CheckUserExistsWithUserName(ctx, user.Username)
-	if userExists {
-		return models.ErrUserExists
-	}
-
-	err = user.ValidateUser()
-	if err != nil {
-		authService.l.Println("Error validating user model", err)
-		return err
-	}
 
 	err = authService.userRepo.RegisterUser(ctx, user)
 	if err != nil {
@@ -71,7 +72,7 @@ func (authService AuthenticationService) LoginUser(ctx context.Context, username
 	claims["username"] = username
 	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
 
-	t, err := tokenMethod.SignedString([]byte("adminSecret"))
+	t, err := tokenMethod.SignedString([]byte(os.Getenv("JWT_SECRET")))
 
 	if err != nil {
 		authService.l.Println(err)
