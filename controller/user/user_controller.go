@@ -1,4 +1,4 @@
-package authentication_controller
+package user_controller
 
 import (
 	"encoding/json"
@@ -8,30 +8,23 @@ import (
 	"time"
 
 	"github.com/asishshaji/dotedon-api/models"
-	authentication_service "github.com/asishshaji/dotedon-api/services/authentication"
+	user_service "github.com/asishshaji/dotedon-api/services/user"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type UserController struct {
-	userService authentication_service.IAuthenticationService
+	userService user_service.IUserService
 	l           *log.Logger
 }
 
-func NewUserController(l *log.Logger, uS authentication_service.IAuthenticationService) IAuthenticationControllerInterface {
+func NewUserController(l *log.Logger, uS user_service.IUserService) IUserController {
 	return UserController{
 		userService: uS,
 		l:           l,
 	}
 }
 
-// RegisterUser godoc
-// @Summary  Registers user
-// @Accept   json
-// @Product  json
-// @Param    user  body      models.User  true  "User body"
-// @Success  200   {object}  map[string]string
-// @Router   /user [post]
 func (uC UserController) RegisterUser(c echo.Context) error {
 
 	userModel := models.User{}
@@ -89,4 +82,15 @@ func (uC UserController) LoginUser(c echo.Context) error {
 		Message: token,
 	})
 
+}
+
+func (uC UserController) GetMentors(c echo.Context) error {
+	responseDtos, err := uC.userService.GetMentors(c.Request().Context())
+	if err != nil {
+		uC.l.Println(err)
+		return c.JSON(http.StatusInternalServerError, models.Response{
+			Message: err.Error(),
+		})
+	}
+	return c.JSON(http.StatusOK, responseDtos)
 }

@@ -24,11 +24,13 @@ type UserResponse struct {
 	Country          string             `json:"country"`
 	DateOfJoining    string             `json:"date_of_joining"`
 	CourseEndingDate string             `json:"course_ending_date"`
+	Mentors          []MentorResponse   `json:"mentors"`
 }
 
 type MentorResponse struct {
-	Name         string `json:"name"`
-	Title        string `json:"title"`
-	Organization string `json:"orginization"`
-	Domain       string `json:"domain"`
+	Name         string             `json:"name"`
+	Title        string             `json:"title"`
+	Organization string             `json:"orginization"`
+	Domain       string             `json:"domain"`
+	CreatedAt    primitive.DateTime `json:"created_at"`
 }

@@ -55,8 +55,21 @@ func (user *User) ValidateUser() error {
 }
 
 type MentorDTO struct {
-	Name         string `json:"name" validate:"required"`
-	Title        string `json:"title" validate:"required"`
-	Organization string `json:"orginization" validate:"required"`
-	Domain       string `json:"domain" validate:"required"`
+	Name         string             `json:"name" validate:"required"`
+	Title        string             `json:"title" validate:"required"`
+	Organization string             `json:"orginization" validate:"required"`
+	Domain       string             `json:"domain" validate:"required"`
+	CreatedAt    primitive.DateTime `json:"-"`
+	UpdatedAt    primitive.DateTime `json:"-"`
+}
+
+func (dto *MentorDTO) ToResponse() *MentorResponse {
+
+	return &MentorResponse{
+		Name:         dto.Name,
+		Title:        dto.Title,
+		Organization: dto.Organization,
+		Domain:       dto.Organization,
+		CreatedAt:    dto.CreatedAt,
+	}
 }

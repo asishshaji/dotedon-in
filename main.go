@@ -4,13 +4,11 @@ import (
 	"log"
 	"os"
 
-	authentication_controller "github.com/asishshaji/dotedon-api/controller/authentication"
-	authentication_repository "github.com/asishshaji/dotedon-api/repositories/authentication"
-	authentication_service "github.com/asishshaji/dotedon-api/services/authentication"
+	user_controller "github.com/asishshaji/dotedon-api/controller/user"
+	user_repository "github.com/asishshaji/dotedon-api/repositories/user"
+	user_service "github.com/asishshaji/dotedon-api/services/user"
 	"github.com/asishshaji/dotedon-api/utils"
 )
-
-// @version  1.0
 
 func main() {
 
@@ -19,10 +17,10 @@ func main() {
 	env := utils.LoadEnv(logger)
 	db := env.ConnectToDB()
 
-	userAuthRepo := authentication_repository.NewUserAuthRepo(logger, db)
-	userAuthService := authentication_service.NewAuthenticationService(logger, userAuthRepo)
-	userAuthController := authentication_controller.NewUserController(logger, userAuthService)
+	userRepo := user_repository.NewUserAuthRepo(logger, db)
+	userService := user_service.NewUserService(logger, userRepo)
+	userController := user_controller.NewUserController(logger, userService)
 
-	app := NewApp(env.ServerPort, userAuthController)
+	app := NewApp(env.ServerPort, userController)
 	app.RunServer()
 }

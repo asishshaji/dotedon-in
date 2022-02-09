@@ -1,12 +1,14 @@
 package main
 
 import (
-	authentication_controller "github.com/asishshaji/dotedon-api/controller/authentication"
-	"github.com/asishshaji/dotedon-api/docs"
+	"context"
+	"log"
+	"os"
+	"os/signal"
+	"time"
 
-	_ "github.com/asishshaji/dotedon-api/docs"
+	user_controller "github.com/asishshaji/dotedon-api/controller/user"
 	"github.com/labstack/echo/v4"
-	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 type App struct {
@@ -14,24 +16,13 @@ type App struct {
 	port string
 }
 
-// @contact.name   API Support
-// @contact.url    http://www.swagger.io/support
-// @contact.email  support@swagger.io
-
-// @license.name  Apache 2.0
-// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
-func NewApp(port string, userController authentication_controller.IAuthenticationControllerInterface) *App {
-	docs.SwaggerInfo.Title = "Dotedon API"
-	docs.SwaggerInfo.Version = "1.0"
-	docs.SwaggerInfo.Host = "localhost:9091"
-
+func NewApp(port string, userController user_controller.IUserController) *App {
 	e := echo.New()
-
-	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	uG := e.Group("/user")
 	uG.POST("", userController.RegisterUser)
 	uG.POST("/login", userController.LoginUser)
+	uG.GET("/mentors", userController.GetMentors)
 
 	return &App{
 		app:  e,
@@ -40,5 +31,21 @@ func NewApp(port string, userController authentication_controller.IAuthenticatio
 }
 
 func (a *App) RunServer() {
-	a.app.Logger.Fatal(a.app.Start(a.port))
+
+	go func() {
+		a.app.Logger.Fatal(a.app.Start(a.port))
+	}()
+
+	sigChan := make(chan os.Signal)
+	signal.Notify(sigChan, os.Interrupt)
+	signal.Notify(sigChan, os.Kill)
+
+	sigData := <-sigChan
+
+	log.Printf("Signal received : %v\n", sigData)
+	tc, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+
+	defer cancel()
+
+	a.app.Shutdown(tc)
 }

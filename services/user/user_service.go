@@ -1,4 +1,4 @@
-package authentication_service
+package user_service
 
 import (
 	"context"
@@ -7,24 +7,24 @@ import (
 	"time"
 
 	"github.com/asishshaji/dotedon-api/models"
-	authentication_repository "github.com/asishshaji/dotedon-api/repositories/authentication"
+	user_repository "github.com/asishshaji/dotedon-api/repositories/user"
 	"github.com/asishshaji/dotedon-api/utils"
 	"github.com/dgrijalva/jwt-go"
 )
 
-type AuthenticationService struct {
-	userRepo authentication_repository.IUserAuthenticationRepository
+type UserService struct {
+	userRepo user_repository.IUserRepository
 	l        *log.Logger
 }
 
-func NewAuthenticationService(l *log.Logger, uR authentication_repository.IUserAuthenticationRepository) IAuthenticationService {
-	return AuthenticationService{
+func NewUserService(l *log.Logger, uR user_repository.IUserRepository) IUserService {
+	return UserService{
 		userRepo: uR,
 		l:        l,
 	}
 }
 
-func (authService AuthenticationService) RegisterUser(ctx context.Context, user *models.User) error {
+func (authService UserService) RegisterUser(ctx context.Context, user *models.User) error {
 
 	userExists := authService.userRepo.CheckUserExistsWithUserName(ctx, user.Username)
 	if userExists {
@@ -54,7 +54,7 @@ func (authService AuthenticationService) RegisterUser(ctx context.Context, user 
 	return nil
 }
 
-func (authService AuthenticationService) LoginUser(ctx context.Context, username, password string) (string, error) {
+func (authService UserService) LoginUser(ctx context.Context, username, password string) (string, error) {
 
 	user := authService.userRepo.GetUserByUsername(ctx, username)
 	if user == nil {
@@ -81,4 +81,19 @@ func (authService AuthenticationService) LoginUser(ctx context.Context, username
 
 	return t, nil
 
+}
+
+func (authService UserService) GetMentors(ctx context.Context) ([]*models.MentorResponse, error) {
+	mentorDtos, err := authService.userRepo.GetMentors(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	mentorResponses := []*models.MentorResponse{}
+
+	for _, dto := range mentorDtos {
+		mentorResponses = append(mentorResponses, dto.ToResponse())
+	}
+
+	return mentorResponses, nil
 }
