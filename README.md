@@ -1,4 +1,1 @@
-[x] Authentication
-[] Mentor creation
-[x] Getting Mentors
-[] Saving mentor to user
+![alt text](https://github.com/asishshaji/dotedon-in/blob/admin/board.png?raw=true)
