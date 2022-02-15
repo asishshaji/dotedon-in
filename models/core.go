@@ -109,9 +109,15 @@ type Task struct {
 
 type TaskUpdate struct {
 	Id        primitive.ObjectID `json:"id"`
-	Semester  string             `json:"semester"`
-	Type      string             `json:"type"`
-	Title     string             `json:"title"` // title of task
-	Detail    string             `json:"detail"`
+	Semester  string             `json:"semester" validate:"required"`
+	Type      string             `json:"type" validate:"required"`
+	Title     string             `json:"title" validate:"required"` // title of task
+	Detail    string             `json:"detail" validate:"required"`
 	UpdatedAt primitive.DateTime `json:"updated_at"`
+}
+
+func (task *TaskUpdate) Validate() error {
+	validate := validator.New()
+
+	return validate.Struct(task)
 }
