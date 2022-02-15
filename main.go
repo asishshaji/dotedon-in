@@ -4,9 +4,9 @@ import (
 	"log"
 	"os"
 
-	user_controller "github.com/asishshaji/dotedon-api/controller/user"
-	user_repository "github.com/asishshaji/dotedon-api/repositories/user"
-	user_service "github.com/asishshaji/dotedon-api/services/user"
+	student_controller "github.com/asishshaji/dotedon-api/controller/student"
+	student_repository "github.com/asishshaji/dotedon-api/repositories/student"
+	student_service "github.com/asishshaji/dotedon-api/services/student"
 	"github.com/asishshaji/dotedon-api/utils"
 )
 
@@ -17,10 +17,14 @@ func main() {
 	env := utils.LoadEnv(logger)
 	db := env.ConnectToDB()
 
-	userRepo := user_repository.NewUserAuthRepo(logger, db)
-	userService := user_service.NewUserService(logger, userRepo)
-	userController := user_controller.NewUserController(logger, userService)
+	studentRepo := student_repository.NewStudentAuthRepo(logger, db)
+	studentService := student_service.NewStudentService(logger, studentRepo)
+	studentController := student_controller.NewStudentController(logger, studentService)
 
-	app := NewApp(env.ServerPort, userController)
+	controller := Controllers{
+		StudentController: studentController,
+	}
+
+	app := NewApp(env.ServerPort, controller)
 	app.RunServer()
 }

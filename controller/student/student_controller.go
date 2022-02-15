@@ -1,4 +1,4 @@
-package user_controller
+package student_controller
 
 import (
 	"encoding/json"
@@ -8,27 +8,27 @@ import (
 	"time"
 
 	"github.com/asishshaji/dotedon-api/models"
-	user_service "github.com/asishshaji/dotedon-api/services/user"
+	student_service "github.com/asishshaji/dotedon-api/services/student"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type UserController struct {
-	userService user_service.IUserService
-	l           *log.Logger
+type StudentController struct {
+	studentService student_service.IStudentService
+	l              *log.Logger
 }
 
-func NewUserController(l *log.Logger, uS user_service.IUserService) IUserController {
-	return UserController{
-		userService: uS,
-		l:           l,
+func NewStudentController(l *log.Logger, uS student_service.IStudentService) IStudentController {
+	return StudentController{
+		studentService: uS,
+		l:              l,
 	}
 }
 
-func (uC UserController) RegisterUser(c echo.Context) error {
+func (uC StudentController) RegisterStudent(c echo.Context) error {
 
-	userModel := models.User{}
+	userModel := models.Student{}
 
 	if err := json.NewDecoder(c.Request().Body).Decode(&userModel); err != nil {
 		uC.l.Println(err)
@@ -39,7 +39,7 @@ func (uC UserController) RegisterUser(c echo.Context) error {
 	userModel.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
 	userModel.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
 
-	err := uC.userService.RegisterUser(c.Request().Context(), &userModel)
+	err := uC.studentService.RegisterStudent(c.Request().Context(), &userModel)
 
 	if err != nil {
 		uC.l.Println(err)
@@ -54,7 +54,7 @@ func (uC UserController) RegisterUser(c echo.Context) error {
 	})
 }
 
-func (uC UserController) LoginUser(c echo.Context) error {
+func (uC StudentController) LoginStudent(c echo.Context) error {
 
 	json_map := make(map[string]interface{})
 	err := json.NewDecoder(c.Request().Body).Decode(&json_map)
@@ -70,7 +70,7 @@ func (uC UserController) LoginUser(c echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	token, err := uC.userService.LoginUser(c.Request().Context(), username, password)
+	token, err := uC.studentService.LoginStudent(c.Request().Context(), username, password)
 
 	if err != nil {
 		uC.l.Println(err)
@@ -85,8 +85,8 @@ func (uC UserController) LoginUser(c echo.Context) error {
 
 }
 
-func (uC UserController) GetMentors(c echo.Context) error {
-	responseDtos, err := uC.userService.GetMentors(c.Request().Context())
+func (uC StudentController) GetMentors(c echo.Context) error {
+	responseDtos, err := uC.studentService.GetMentors(c.Request().Context())
 	if err != nil {
 		uC.l.Println(err)
 		return c.JSON(http.StatusInternalServerError, models.Response{
@@ -96,7 +96,7 @@ func (uC UserController) GetMentors(c echo.Context) error {
 	return c.JSON(http.StatusOK, responseDtos)
 }
 
-func (uC UserController) AddMentorToUser(c echo.Context) error {
+func (uC StudentController) AddMentorToStudent(c echo.Context) error {
 	// change updated time of user
 
 	mentorId := c.FormValue("mentor_id")
@@ -110,7 +110,7 @@ func (uC UserController) AddMentorToUser(c echo.Context) error {
 
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*models.Claims)
-	uC.l.Println(claims.UserId)
-	uC.userService.AddMentorToUser(c.Request().Context(), claims.UserId, mentorObjId)
+	uC.l.Println(claims.StudentId)
+	uC.studentService.AddMentorToStudent(c.Request().Context(), claims.StudentId, mentorObjId)
 	return nil
 }

@@ -1,4 +1,4 @@
-package user_service
+package student_service
 
 import (
 	"context"
@@ -7,32 +7,32 @@ import (
 	"time"
 
 	"github.com/asishshaji/dotedon-api/models"
-	user_repository "github.com/asishshaji/dotedon-api/repositories/user"
+	student_repository "github.com/asishshaji/dotedon-api/repositories/student"
 	"github.com/asishshaji/dotedon-api/utils"
 	"github.com/golang-jwt/jwt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type UserService struct {
-	userRepo user_repository.IUserRepository
-	l        *log.Logger
+type StudentService struct {
+	studentRepo student_repository.IStudentRepository
+	l           *log.Logger
 }
 
-func NewUserService(l *log.Logger, uR user_repository.IUserRepository) IUserService {
-	return UserService{
-		userRepo: uR,
-		l:        l,
+func NewStudentService(l *log.Logger, uR student_repository.IStudentRepository) IStudentService {
+	return StudentService{
+		studentRepo: uR,
+		l:           l,
 	}
 }
 
-func (authService UserService) RegisterUser(ctx context.Context, user *models.User) error {
+func (authService StudentService) RegisterStudent(ctx context.Context, user *models.Student) error {
 
-	userExists := authService.userRepo.CheckUserExistsWithUserName(ctx, user.Username)
+	userExists := authService.studentRepo.CheckStudentExistsWithStudentName(ctx, user.Studentname)
 	if userExists {
-		return models.ErrUserExists
+		return models.ErrStudentExists
 	}
 
-	err := user.ValidateUser()
+	err := user.ValidateStudent()
 	if err != nil {
 		authService.l.Println("Error validating user model", err)
 		return err
@@ -49,7 +49,7 @@ func (authService UserService) RegisterUser(ctx context.Context, user *models.Us
 	user.ID = primitive.NewObjectIDFromTimestamp(time.Now())
 	user.Mentors = make([]primitive.ObjectID, 0)
 
-	err = authService.userRepo.RegisterUser(ctx, user)
+	err = authService.studentRepo.RegisterStudent(ctx, user)
 	if err != nil {
 		return err
 	}
@@ -57,11 +57,11 @@ func (authService UserService) RegisterUser(ctx context.Context, user *models.Us
 	return nil
 }
 
-func (authService UserService) LoginUser(ctx context.Context, username, password string) (string, error) {
+func (authService StudentService) LoginStudent(ctx context.Context, username, password string) (string, error) {
 
-	user := authService.userRepo.GetUserByUsername(ctx, username)
+	user := authService.studentRepo.GetStudentByStudentname(ctx, username)
 	if user == nil {
-		return "", models.ErrNoUserExists
+		return "", models.ErrNoStudentExists
 	}
 
 	authenticate := utils.CheckPasswordHash(password, user.Password)
@@ -69,7 +69,7 @@ func (authService UserService) LoginUser(ctx context.Context, username, password
 		return "", models.ErrInvalidCredentials
 	}
 
-	claims := &models.Claims{
+	claims := &models.StudentJWTClaims{
 		user.ID,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
@@ -88,8 +88,8 @@ func (authService UserService) LoginUser(ctx context.Context, username, password
 
 }
 
-func (authService UserService) GetMentors(ctx context.Context) ([]*models.MentorResponse, error) {
-	mentorDtos, err := authService.userRepo.GetMentors(ctx)
+func (authService StudentService) GetMentors(ctx context.Context) ([]*models.MentorResponse, error) {
+	mentorDtos, err := authService.studentRepo.GetMentors(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -103,8 +103,8 @@ func (authService UserService) GetMentors(ctx context.Context) ([]*models.Mentor
 	return mentorResponses, nil
 }
 
-func (authService UserService) AddMentorToUser(ctx context.Context, userId, mentorId primitive.ObjectID) error {
-	err := authService.userRepo.AddMentorToUser(ctx, userId, mentorId)
+func (authService StudentService) AddMentorToStudent(ctx context.Context, userId, mentorId primitive.ObjectID) error {
+	err := authService.studentRepo.AddMentorToStudent(ctx, userId, mentorId)
 	if err != nil {
 		return err
 	}

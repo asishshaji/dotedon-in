@@ -7,7 +7,8 @@ import (
 	"os/signal"
 	"time"
 
-	user_controller "github.com/asishshaji/dotedon-api/controller/user"
+	admin_controller "github.com/asishshaji/dotedon-api/controller/admin"
+	student_controller "github.com/asishshaji/dotedon-api/controller/student"
 	"github.com/asishshaji/dotedon-api/models"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -18,22 +19,29 @@ type App struct {
 	port string
 }
 
-func NewApp(port string, userController user_controller.IUserController) *App {
+type Controllers struct {
+	StudentController student_controller.IStudentController
+	AdminController   admin_controller.IAdminController
+}
+
+func NewApp(port string, controller Controllers) *App {
 	e := echo.New()
 
 	uG := e.Group("/user")
-	uG.POST("", userController.RegisterUser)
-	uG.POST("/login", userController.LoginUser)
+	uG.POST("", controller.StudentController.RegisterStudent)
+	uG.POST("/login", controller.StudentController.LoginStudent)
 
 	config := middleware.JWTConfig{
 		Claims:     &models.Claims{},
 		SigningKey: []byte(os.Getenv("JWT_SECRET")),
 	}
 
-	uG.Use(middleware.JWTWithConfig(config))
+	r := e.Group("/restricted")
 
-	uG.GET("/mentors", userController.GetMentors)
-	uG.POST("/mentors", userController.AddMentorToUser)
+	r.Use(middleware.JWTWithConfig(config))
+
+	r.GET("/mentors", controller.StudentController.GetMentors)
+	r.POST("/mentors", controller.StudentController.AddMentorToStudent)
 
 	return &App{
 		app:  e,

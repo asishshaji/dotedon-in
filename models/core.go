@@ -8,8 +8,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type Claims struct {
-	UserId primitive.ObjectID `json:"id"`
+type StudentJWTClaims struct {
+	StudentId primitive.ObjectID
+	jwt.StandardClaims
+}
+
+type AdminJWTClaims struct {
+	AdminId primitive.ObjectID
+	IsAdmin bool
 	jwt.StandardClaims
 }
 
@@ -24,9 +30,15 @@ const (
 	FEMALE Gender = 2
 )
 
-type User struct {
+type Admin struct {
+	ID       primitive.ObjectID `bson:"_id"`
+	Username string             `json:"username"`
+	Password string             `json:"-"`
+}
+
+type Student struct {
 	ID               primitive.ObjectID   `bson:"_id" json:"_id"`
-	Username         string               `json:"username" validate:"required"`
+	Studentname      string               `json:"studentname" validate:"required"`
 	FirstName        string               `json:"first_name" validate:"required"`
 	LastName         string               `json:"last_name" validate:"required"`
 	MiddleName       string               `json:"middle_name"`
@@ -51,15 +63,17 @@ type User struct {
 	Mentors          []primitive.ObjectID `json:"-"`
 }
 
-var ErrUserExists = fmt.Errorf("User already exists")
+var ErrStudentExists = fmt.Errorf("Student already exists")
 var ErrInvalidCredentials = fmt.Errorf("Invalid credentials")
-var ErrNoUserExists = fmt.Errorf("No user with given username")
-var ErrNoUserWithIdExists = fmt.Errorf("No user with id exists")
+var ErrNoStudentExists = fmt.Errorf("No Student with given studentname")
+var ErrNoStudentWithIdExists = fmt.Errorf("No Student with id exists")
 
-func (user *User) ValidateUser() error {
+var ErrNoAdminWithUsername = fmt.Errorf("No admin with username exists")
+
+func (Student *Student) ValidateStudent() error {
 	validate := validator.New()
 
-	return validate.Struct(user)
+	return validate.Struct(Student)
 }
 
 type MentorDTO struct {
