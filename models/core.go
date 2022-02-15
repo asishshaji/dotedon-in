@@ -4,8 +4,20 @@ import (
 	"fmt"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/golang-jwt/jwt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+type StudentJWTClaims struct {
+	StudentId primitive.ObjectID
+	jwt.StandardClaims
+}
+
+type AdminJWTClaims struct {
+	AdminId primitive.ObjectID
+	IsAdmin bool
+	jwt.StandardClaims
+}
 
 type Response struct {
 	Message interface{} `json:"message"`
@@ -18,7 +30,13 @@ const (
 	FEMALE Gender = 2
 )
 
-type User struct {
+type Admin struct {
+	ID       primitive.ObjectID `bson:"_id"`
+	Username string             `json:"username"`
+	Password string             `json:"-"`
+}
+
+type Student struct {
 	ID               primitive.ObjectID   `bson:"_id" json:"_id"`
 	Username         string               `json:"username" validate:"required"`
 	FirstName        string               `json:"first_name" validate:"required"`
@@ -45,15 +63,17 @@ type User struct {
 	Mentors          []primitive.ObjectID `json:"-"`
 }
 
-var ErrUserExists = fmt.Errorf("User already exists")
+var ErrStudentExists = fmt.Errorf("Student already exists")
 var ErrInvalidCredentials = fmt.Errorf("Invalid credentials")
-var ErrNoUserExists = fmt.Errorf("No user with given username")
-var ErrNoUserWithIdExists = fmt.Errorf("No user with id exists")
+var ErrNoStudentExists = fmt.Errorf("No Student with given studentname")
+var ErrNoStudentWithIdExists = fmt.Errorf("No Student with id exists")
 
-func (user *User) ValidateUser() error {
+var ErrNoAdminWithUsername = fmt.Errorf("No admin with username exists")
+
+func (Student *Student) ValidateStudent() error {
 	validate := validator.New()
 
-	return validate.Struct(user)
+	return validate.Struct(Student)
 }
 
 type MentorDTO struct {
@@ -74,4 +94,30 @@ func (dto *MentorDTO) ToResponse() *MentorResponse {
 		Domain:       dto.Organization,
 		CreatedAt:    dto.CreatedAt,
 	}
+}
+
+type Task struct {
+	Id        primitive.ObjectID `json:"id" bson:"_id"`
+	Semester  string             `json:"semester"`
+	Type      string             `json:"type"`  // TYPE CAN BE RETAIL, ED-Tech
+	Title     string             `json:"title"` // title of task
+	Detail    string             `json:"detail"`
+	CreatedAt primitive.DateTime `json:"created_at"`
+	UpdatedAt primitive.DateTime `json:"updated_at"`
+	CreatorID primitive.ObjectID
+}
+
+type TaskUpdate struct {
+	Id        primitive.ObjectID `json:"id"`
+	Semester  string             `json:"semester" validate:"required"`
+	Type      string             `json:"type" validate:"required"`
+	Title     string             `json:"title" validate:"required"` // title of task
+	Detail    string             `json:"detail" validate:"required"`
+	UpdatedAt primitive.DateTime `json:"updated_at"`
+}
+
+func (task *TaskUpdate) Validate() error {
+	validate := validator.New()
+
+	return validate.Struct(task)
 }
