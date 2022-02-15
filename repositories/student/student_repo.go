@@ -71,13 +71,13 @@ func (uR studentRepo) GetMentors(ctx context.Context) ([]*models.MentorDTO, erro
 	cursor, err := uR.mentorCollection.Find(ctx, bson.M{})
 
 	if err != nil {
-		uR.l.Fatalln(err)
+		uR.l.Println(err)
 
 		return nil, err
 	}
 
 	if err = cursor.All(ctx, &mentors); err != nil {
-		uR.l.Fatalln(err)
+		uR.l.Println(err)
 		return nil, err
 	}
 

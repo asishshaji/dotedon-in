@@ -109,7 +109,7 @@ func (uC StudentController) AddMentorToStudent(c echo.Context) error {
 	}
 
 	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(*models.Claims)
+	claims := user.Claims.(*models.StudentJWTClaims)
 	uC.l.Println(claims.StudentId)
 	uC.studentService.AddMentorToStudent(c.Request().Context(), claims.StudentId, mentorObjId)
 	return nil

@@ -27,7 +27,7 @@ func NewStudentService(l *log.Logger, uR student_repository.IStudentRepository) 
 
 func (authService StudentService) RegisterStudent(ctx context.Context, user *models.Student) error {
 
-	userExists := authService.studentRepo.CheckStudentExistsWithStudentName(ctx, user.Studentname)
+	userExists := authService.studentRepo.CheckStudentExistsWithStudentName(ctx, user.Username)
 	if userExists {
 		return models.ErrStudentExists
 	}

@@ -38,7 +38,7 @@ type Admin struct {
 
 type Student struct {
 	ID               primitive.ObjectID   `bson:"_id" json:"_id"`
-	Studentname      string               `json:"studentname" validate:"required"`
+	Username         string               `json:"username" validate:"required"`
 	FirstName        string               `json:"first_name" validate:"required"`
 	LastName         string               `json:"last_name" validate:"required"`
 	MiddleName       string               `json:"middle_name"`
@@ -94,4 +94,24 @@ func (dto *MentorDTO) ToResponse() *MentorResponse {
 		Domain:       dto.Organization,
 		CreatedAt:    dto.CreatedAt,
 	}
+}
+
+type Task struct {
+	Id        primitive.ObjectID `json:"id" bson:"_id"`
+	Semester  string             `json:"semester"`
+	Type      string             `json:"type"`  // TYPE CAN BE RETAIL, ED-Tech
+	Title     string             `json:"title"` // title of task
+	Detail    string             `json:"detail"`
+	CreatedAt primitive.DateTime `json:"created_at"`
+	UpdatedAt primitive.DateTime `json:"updated_at"`
+	CreatorID primitive.ObjectID
+}
+
+type TaskUpdate struct {
+	Id        primitive.ObjectID `json:"id"`
+	Semester  string             `json:"semester"`
+	Type      string             `json:"type"`
+	Title     string             `json:"title"` // title of task
+	Detail    string             `json:"detail"`
+	UpdatedAt primitive.DateTime `json:"updated_at"`
 }

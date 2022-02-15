@@ -27,21 +27,33 @@ type Controllers struct {
 func NewApp(port string, controller Controllers) *App {
 	e := echo.New()
 
-	uG := e.Group("/user")
+	uG := e.Group("/student")
 	uG.POST("", controller.StudentController.RegisterStudent)
 	uG.POST("/login", controller.StudentController.LoginStudent)
 
-	config := middleware.JWTConfig{
-		Claims:     &models.Claims{},
+	studentJwtConfig := middleware.JWTConfig{
+		Claims:     &models.StudentJWTClaims{},
 		SigningKey: []byte(os.Getenv("JWT_SECRET")),
 	}
 
 	r := e.Group("/restricted")
 
-	r.Use(middleware.JWTWithConfig(config))
+	r.Use(middleware.JWTWithConfig(studentJwtConfig))
 
 	r.GET("/mentors", controller.StudentController.GetMentors)
 	r.POST("/mentors", controller.StudentController.AddMentorToStudent)
+
+	adminGroup := e.Group("/admin")
+	adminGroup.POST("/login", controller.AdminController.Login)
+
+	adminGroup.Use(middleware.JWTWithConfig(middleware.JWTConfig{
+		Claims:     &models.AdminJWTClaims{},
+		SigningKey: []byte(os.Getenv("JWT_SECRET")),
+	}))
+
+	adminGroup.POST("/task", controller.AdminController.AddTask)
+	adminGroup.PUT("/task", controller.AdminController.UpdateTask)
+	adminGroup.GET("/task", controller.AdminController.GetTasks)
 
 	return &App{
 		app:  e,

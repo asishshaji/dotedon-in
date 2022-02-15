@@ -10,6 +10,7 @@ import (
 	admin_repository "github.com/asishshaji/dotedon-api/repositories/admin"
 	"github.com/asishshaji/dotedon-api/utils"
 	"github.com/golang-jwt/jwt"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type AdminService struct {
@@ -53,4 +54,32 @@ func (aS AdminService) Login(ctx context.Context, username, password string) (st
 	}
 
 	return t, nil
+}
+
+func (aS AdminService) AddTask(ctx context.Context, task models.Task, creatorID primitive.ObjectID) error {
+	task.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
+	task.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
+	task.CreatorID = creatorID
+	task.Id = primitive.NewObjectIDFromTimestamp(time.Now())
+
+	err := aS.adminRepo.AddTask(ctx, task)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (aS AdminService) UpdateTask(ctx context.Context, task models.TaskUpdate) error {
+	task.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
+
+	err := aS.adminRepo.UpdateTask(ctx, task)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (aS AdminService) GetTasks(ctx context.Context) ([]models.Task, error) {
+	return aS.adminRepo.GetTasks(ctx)
 }
