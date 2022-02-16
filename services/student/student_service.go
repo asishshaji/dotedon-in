@@ -140,6 +140,7 @@ func (sS StudentService) GetTasks(ctx context.Context, studentId primitive.Objec
 	typeVar := ""
 
 	tasks, err := sS.studentRepo.GetTasks(ctx, typeVar)
+	sS.l.Println(tasks)
 	if err != nil {
 		return err
 	}
