@@ -34,3 +34,13 @@ type MentorResponse struct {
 	Domain       string             `json:"domain"`
 	CreatedAt    primitive.DateTime `json:"created_at"`
 }
+
+type TaskStudentResponse struct {
+	ID        primitive.ObjectID `json:"_id"`
+	Title     string             `json:"title"`
+	Detail    string             `json:"detail"`
+	Status    Status             `json:"status"`
+	FileURL   string             `json:"file_url"`
+	Comments  string             `json:"comments"`
+	UpdatedAt string             `json:"updated_at"`
+}

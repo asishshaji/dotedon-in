@@ -16,4 +16,5 @@ type IStudentRepository interface {
 	TaskSubmission(ctx context.Context, task models.TaskSubmission) error
 	GetTasks(ctx context.Context, typeVar string) ([]models.Task, error)
 	GetTaskSubmissions(ctx context.Context, userId primitive.ObjectID) ([]models.TaskSubmission, error)
+	GetStudentByID(ctx context.Context, studentID primitive.ObjectID) (*models.Student, error)
 }

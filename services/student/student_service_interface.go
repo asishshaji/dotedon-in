@@ -13,5 +13,5 @@ type IStudentService interface {
 	GetMentors(ctx context.Context) ([]*models.MentorResponse, error)
 	AddMentorToStudent(ctx context.Context, studentId, mentorId primitive.ObjectID) error
 	TaskSubmission(ctx context.Context, taskDto models.TaskSubmissionDTO, userID primitive.ObjectID) error
-	GetTasks(ctx context.Context, studentId primitive.ObjectID) error
+	GetTasks(ctx context.Context, studentId primitive.ObjectID) ([]models.TaskStudentResponse, error)
 }

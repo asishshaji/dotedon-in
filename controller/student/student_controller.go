@@ -136,5 +136,11 @@ func (sU StudentController) TaskSubmission(c echo.Context) error {
 
 func (sC StudentController) GetTasks(c echo.Context) error {
 
-	return nil
+	taskStudentResponseArr, err := sC.studentService.GetTasks(c.Request().Context(), c.Get("student_id").(primitive.ObjectID))
+	if err != nil {
+		return echo.ErrInternalServerError
+	}
+
+	return c.JSON(http.StatusOK, taskStudentResponseArr)
+
 }

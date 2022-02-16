@@ -45,6 +45,7 @@ func NewApp(port string, controller Controllers) *App {
 	r.GET("/mentors", controller.StudentController.GetMentors)
 	r.POST("/mentors", controller.StudentController.AddMentorToStudent)
 	r.POST("/task/submit", controller.StudentController.TaskSubmission)
+	r.GET("/task", controller.StudentController.GetTasks)
 
 	adminGroup := e.Group("/admin")
 	adminGroup.POST("/login", controller.AdminController.Login)

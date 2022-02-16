@@ -36,10 +36,18 @@ type Admin struct {
 	Password string             `json:"-"`
 }
 
+type PreferedType string
+
+const (
+	EDTECH PreferedType = "ed-tech"
+	RETAIL PreferedType = "retail"
+)
+
 type Student struct {
 	ID               primitive.ObjectID   `bson:"_id" json:"_id"`
 	Username         string               `json:"username" validate:"required"`
 	FirstName        string               `json:"first_name" validate:"required"`
+	PreferedType     PreferedType         `json:"type"`
 	LastName         string               `json:"last_name" validate:"required"`
 	MiddleName       string               `json:"middle_name"`
 	CreatedAt        primitive.DateTime   `json:"-"`
@@ -67,6 +75,7 @@ var ErrStudentExists = fmt.Errorf("Student already exists")
 var ErrInvalidCredentials = fmt.Errorf("Invalid credentials")
 var ErrNoStudentExists = fmt.Errorf("No Student with given studentname")
 var ErrNoStudentWithIdExists = fmt.Errorf("No Student with id exists")
+var ErrParsingStudent = fmt.Errorf("Error parsing student data from database")
 
 var ErrNoAdminWithUsername = fmt.Errorf("No admin with username exists")
 
@@ -138,11 +147,11 @@ type TaskSubmissionDTO struct {
 }
 
 type TaskSubmission struct {
-	UserId  primitive.ObjectID
-	TaskId  primitive.ObjectID
-	Comment string
-	FileURL string
-	Status  Status
+	UserId  primitive.ObjectID `json:"userid"`
+	TaskId  primitive.ObjectID `json:"taskid"`
+	Comment string             `json:"comment"`
+	FileURL string             `json:"fileurl"`
+	Status  Status             `json:"status"`
 }
 
 var ErrTaskSubmissionExists = fmt.Errorf("Task submission already exists")

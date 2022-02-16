@@ -143,6 +143,7 @@ func (sR studentRepo) GetTasks(ctx context.Context, typeVar string) ([]models.Ta
 	cursor, err := sR.taskCollection.Find(ctx, bson.M{
 		"type": typeVar,
 	})
+
 	if err != nil {
 		sR.l.Println(err)
 		return nil, err
@@ -158,7 +159,8 @@ func (sR studentRepo) GetTasks(ctx context.Context, typeVar string) ([]models.Ta
 
 func (sR studentRepo) GetTaskSubmissions(ctx context.Context, userId primitive.ObjectID) ([]models.TaskSubmission, error) {
 	submissions := []models.TaskSubmission{}
-	cursor, err := sR.taskCollection.Find(ctx, bson.M{
+	sR.l.Println(userId)
+	cursor, err := sR.taskSubmissionCollection.Find(ctx, bson.M{
 		"userid": userId,
 	})
 	if err != nil {
@@ -171,4 +173,25 @@ func (sR studentRepo) GetTaskSubmissions(ctx context.Context, userId primitive.O
 		return nil, err
 	}
 	return submissions, nil
+}
+
+func (sR studentRepo) GetStudentByID(ctx context.Context, studentID primitive.ObjectID) (*models.Student, error) {
+
+	student := new(models.Student)
+
+	res := sR.studentCollection.FindOne(ctx, bson.M{
+		"_id": studentID,
+	})
+	if res.Err() == mongo.ErrNoDocuments {
+		sR.l.Println(res.Err())
+		return nil, models.ErrNoStudentWithIdExists
+	}
+
+	err := res.Decode(&student)
+	if err != nil {
+		return nil, models.ErrParsingStudent
+	}
+
+	return student, nil
+
 }

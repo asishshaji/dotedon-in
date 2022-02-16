@@ -135,15 +135,48 @@ func (sS StudentService) TaskSubmission(ctx context.Context, taskDto models.Task
 	return nil
 }
 
-func (sS StudentService) GetTasks(ctx context.Context, studentId primitive.ObjectID) error {
+func (sS StudentService) GetTasks(ctx context.Context, studentId primitive.ObjectID) ([]models.TaskStudentResponse, error) {
 
-	typeVar := ""
+	taskStudentResponse := []models.TaskStudentResponse{}
 
-	tasks, err := sS.studentRepo.GetTasks(ctx, typeVar)
-	sS.l.Println(tasks)
+	student, err := sS.studentRepo.GetStudentByID(ctx, studentId)
+
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	taskSubmission, err := sS.studentRepo.GetTaskSubmissions(ctx, studentId)
+	if err != nil {
+		return nil, err
+	}
+
+	tasks, err := sS.studentRepo.GetTasks(ctx, string(student.PreferedType))
+	if err != nil {
+		return nil, err
+	}
+
+	for _, t := range tasks {
+
+		fileUrl, comment := getFileAndCommentsForTaskIdAndUserId(taskSubmission, t.Id, studentId)
+		taskStudentResponse = append(taskStudentResponse, models.TaskStudentResponse{
+			ID:        t.Id,
+			Title:     t.Title,
+			Detail:    t.Detail,
+			Status:    models.Status(t.Type),
+			FileURL:   fileUrl,
+			Comments:  comment,
+			UpdatedAt: "",
+		})
+	}
+
+	return taskStudentResponse, nil
+}
+
+func getFileAndCommentsForTaskIdAndUserId(tS []models.TaskSubmission, taskID, userID primitive.ObjectID) (string, string) {
+	for _, t := range tS {
+		if t.TaskId == taskID && t.UserId == userID {
+			return t.FileURL, t.Comment
+		}
+	}
+	return "", ""
 }
