@@ -9,7 +9,6 @@ import (
 
 	"github.com/asishshaji/dotedon-api/models"
 	student_service "github.com/asishshaji/dotedon-api/services/student"
-	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -108,9 +107,27 @@ func (uC StudentController) AddMentorToStudent(c echo.Context) error {
 		return err
 	}
 
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(*models.StudentJWTClaims)
-	uC.l.Println(claims.StudentId)
-	uC.studentService.AddMentorToStudent(c.Request().Context(), claims.StudentId, mentorObjId)
+	uC.studentService.AddMentorToStudent(c.Request().Context(), c.Get("student_id").(primitive.ObjectID), mentorObjId)
 	return nil
+}
+
+func (sU StudentController) TaskSubmission(c echo.Context) error {
+
+	taskDto := models.TaskSubmissionDTO{}
+
+	err := json.NewDecoder(c.Request().Body).Decode(&taskDto)
+
+	if err != nil {
+		sU.l.Println(err)
+		return echo.ErrInternalServerError
+	}
+
+	err = sU.studentService.TaskSubmission(c.Request().Context(), taskDto, c.Get("student_id").(primitive.ObjectID))
+	if err != nil {
+		return echo.ErrInternalServerError
+	}
+
+	return c.JSON(http.StatusCreated, models.Response{
+		Message: "Submitted task",
+	})
 }

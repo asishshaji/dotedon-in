@@ -11,16 +11,20 @@ import (
 )
 
 type studentRepo struct {
-	studentCollection *mongo.Collection
-	mentorCollection  *mongo.Collection
-	l                 *log.Logger
+	studentCollection        *mongo.Collection
+	mentorCollection         *mongo.Collection
+	taskSubmissionCollection *mongo.Collection
+	taskCollection           *mongo.Collection
+	l                        *log.Logger
 }
 
 func NewStudentAuthRepo(l *log.Logger, db *mongo.Database) IStudentRepository {
 	return studentRepo{
-		studentCollection: db.Collection("students"),
-		mentorCollection:  db.Collection("mentors"),
-		l:                 l,
+		studentCollection:        db.Collection("students"),
+		mentorCollection:         db.Collection("mentors"),
+		taskSubmissionCollection: db.Collection("task_submission"),
+		taskCollection:           db.Collection("tasks"),
+		l:                        l,
 	}
 }
 
@@ -38,7 +42,7 @@ func (uR studentRepo) RegisterStudent(ctx context.Context, uM *models.Student) e
 }
 
 func (uR studentRepo) CheckStudentExistsWithStudentName(ctx context.Context, studentname string) bool {
-	err := uR.studentCollection.FindOne(ctx, bson.M{"studentname": studentname}).Err()
+	err := uR.studentCollection.FindOne(ctx, bson.M{"username": studentname}).Err()
 	if err == mongo.ErrNoDocuments {
 		return false
 	}
@@ -47,7 +51,7 @@ func (uR studentRepo) CheckStudentExistsWithStudentName(ctx context.Context, stu
 
 func (uR studentRepo) GetStudentByStudentname(ctx context.Context, studentname string) *models.Student {
 	student := new(models.Student)
-	res := uR.studentCollection.FindOne(ctx, bson.M{"studentname": studentname})
+	res := uR.studentCollection.FindOne(ctx, bson.M{"username": studentname})
 
 	if res.Err() == mongo.ErrNoDocuments {
 		uR.l.Println("Invalid studentname and Password")
@@ -105,4 +109,17 @@ func (uR studentRepo) AddMentorToStudent(ctx context.Context, studentId primitiv
 	}
 
 	return nil
+}
+
+func (sR studentRepo) TaskSubmission(ctx context.Context, task models.TaskSubmission) error {
+	res, err := sR.taskSubmissionCollection.InsertOne(ctx, task)
+	if err != nil {
+		sR.l.Println(err)
+		return err
+	}
+
+	sR.l.Println("Inserted submission with ID", res.InsertedID)
+
+	return nil
+
 }

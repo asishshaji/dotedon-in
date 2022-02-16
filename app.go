@@ -10,6 +10,7 @@ import (
 	admin_controller "github.com/asishshaji/dotedon-api/controller/admin"
 	student_controller "github.com/asishshaji/dotedon-api/controller/student"
 	"github.com/asishshaji/dotedon-api/models"
+	"github.com/asishshaji/dotedon-api/utils"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -39,9 +40,11 @@ func NewApp(port string, controller Controllers) *App {
 	r := e.Group("/restricted")
 
 	r.Use(middleware.JWTWithConfig(studentJwtConfig))
+	r.Use(utils.StudentAuthenticationMiddleware)
 
 	r.GET("/mentors", controller.StudentController.GetMentors)
 	r.POST("/mentors", controller.StudentController.AddMentorToStudent)
+	r.POST("/task/submit", controller.StudentController.TaskSubmission)
 
 	adminGroup := e.Group("/admin")
 	adminGroup.POST("/login", controller.AdminController.Login)
@@ -50,6 +53,8 @@ func NewApp(port string, controller Controllers) *App {
 		Claims:     &models.AdminJWTClaims{},
 		SigningKey: []byte(os.Getenv("JWT_SECRET")),
 	}))
+
+	adminGroup.Use(utils.AdminAuthenticationMiddleware)
 
 	adminGroup.POST("/task", controller.AdminController.AddTask)
 	adminGroup.PUT("/task", controller.AdminController.UpdateTask)

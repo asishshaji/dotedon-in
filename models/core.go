@@ -121,3 +121,26 @@ func (task *TaskUpdate) Validate() error {
 
 	return validate.Struct(task)
 }
+
+type Status string
+
+const (
+	ACTIVE    Status = "active"    // current sem
+	COMPLETED Status = "completed" // completed
+	INACTIVE  Status = "inactive"  // different sem
+)
+
+type TaskSubmissionDTO struct {
+	TaskId  string `json:"task_id"`
+	Comment string `json:"comment"`
+	FileURL string `json:"file_url"`
+	Status  Status `json:"status"`
+}
+
+type TaskSubmission struct {
+	UserId  primitive.ObjectID
+	TaskId  primitive.ObjectID
+	Comment string
+	FileURL string
+	Status  Status
+}

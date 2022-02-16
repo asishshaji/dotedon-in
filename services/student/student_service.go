@@ -110,3 +110,24 @@ func (authService StudentService) AddMentorToStudent(ctx context.Context, userId
 	}
 	return nil
 }
+
+func (sS StudentService) TaskSubmission(ctx context.Context, taskDto models.TaskSubmissionDTO, userID primitive.ObjectID) error {
+
+	taskObjID, err := primitive.ObjectIDFromHex(taskDto.TaskId)
+
+	if err != nil {
+		sS.l.Println(err)
+		return err
+	}
+
+	task := models.TaskSubmission{}
+	task.TaskId = taskObjID
+	task.UserId = userID
+
+	err = sS.studentRepo.TaskSubmission(ctx, task)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
