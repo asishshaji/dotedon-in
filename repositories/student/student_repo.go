@@ -42,11 +42,10 @@ func (uR studentRepo) RegisterStudent(ctx context.Context, uM *models.Student) e
 }
 
 func (uR studentRepo) CheckStudentExistsWithStudentName(ctx context.Context, studentname string) bool {
-	err := uR.studentCollection.FindOne(ctx, bson.M{"username": studentname}).Err()
-	if err == mongo.ErrNoDocuments {
-		return false
-	}
-	return true
+	res := uR.studentCollection.FindOne(ctx, bson.M{
+		"username": studentname,
+	}).Err()
+	return res != mongo.ErrNoDocuments
 }
 
 func (uR studentRepo) GetStudentByStudentname(ctx context.Context, studentname string) *models.Student {
@@ -111,8 +110,21 @@ func (uR studentRepo) AddMentorToStudent(ctx context.Context, studentId primitiv
 	return nil
 }
 
+func checkTaskSubmissionExists(ctx context.Context, collection *mongo.Collection, userId, taskId primitive.ObjectID) bool {
+	res := collection.FindOne(ctx, bson.M{"userid": userId, "taskid": taskId})
+
+	return res.Err() != mongo.ErrNoDocuments
+}
+
 func (sR studentRepo) TaskSubmission(ctx context.Context, task models.TaskSubmission) error {
+
+	if checkTaskSubmissionExists(ctx, sR.taskSubmissionCollection, task.UserId, task.TaskId) {
+		sR.l.Println(models.ErrTaskSubmissionExists)
+		return models.ErrTaskSubmissionExists
+	}
+
 	res, err := sR.taskSubmissionCollection.InsertOne(ctx, task)
+
 	if err != nil {
 		sR.l.Println(err)
 		return err
@@ -122,4 +134,41 @@ func (sR studentRepo) TaskSubmission(ctx context.Context, task models.TaskSubmis
 
 	return nil
 
+}
+
+func (sR studentRepo) GetTasks(ctx context.Context, typeVar string) ([]models.Task, error) {
+	tasks := []models.Task{}
+
+	// TODO add filter queries: semester, type
+	cursor, err := sR.taskCollection.Find(ctx, bson.M{
+		"type": typeVar,
+	})
+	if err != nil {
+		sR.l.Println(err)
+		return nil, err
+	}
+
+	if err = cursor.All(ctx, &tasks); err != nil {
+		sR.l.Println(err)
+		return nil, err
+	}
+
+	return tasks, nil
+}
+
+func (sR studentRepo) GetTaskSubmissions(ctx context.Context, userId primitive.ObjectID) ([]models.TaskSubmission, error) {
+	submissions := []models.TaskSubmission{}
+	cursor, err := sR.taskCollection.Find(ctx, bson.M{
+		"userid": userId,
+	})
+	if err != nil {
+		sR.l.Println(err)
+		return nil, err
+	}
+
+	if err = cursor.All(ctx, &submissions); err != nil {
+		sR.l.Println(err)
+		return nil, err
+	}
+	return submissions, nil
 }

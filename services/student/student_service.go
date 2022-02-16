@@ -123,8 +123,23 @@ func (sS StudentService) TaskSubmission(ctx context.Context, taskDto models.Task
 	task := models.TaskSubmission{}
 	task.TaskId = taskObjID
 	task.UserId = userID
+	task.Comment = taskDto.Comment
+	task.FileURL = taskDto.FileURL
+	task.Status = taskDto.Status
 
 	err = sS.studentRepo.TaskSubmission(ctx, task)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (sS StudentService) GetTasks(ctx context.Context, studentId primitive.ObjectID) error {
+
+	typeVar := ""
+
+	tasks, err := sS.studentRepo.GetTasks(ctx, typeVar)
 	if err != nil {
 		return err
 	}

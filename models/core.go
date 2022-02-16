@@ -144,3 +144,5 @@ type TaskSubmission struct {
 	FileURL string
 	Status  Status
 }
+
+var ErrTaskSubmissionExists = fmt.Errorf("Task submission already exists")

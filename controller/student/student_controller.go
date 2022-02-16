@@ -122,6 +122,8 @@ func (sU StudentController) TaskSubmission(c echo.Context) error {
 		return echo.ErrInternalServerError
 	}
 
+	sU.l.Println(taskDto)
+
 	err = sU.studentService.TaskSubmission(c.Request().Context(), taskDto, c.Get("student_id").(primitive.ObjectID))
 	if err != nil {
 		return echo.ErrInternalServerError
@@ -130,4 +132,9 @@ func (sU StudentController) TaskSubmission(c echo.Context) error {
 	return c.JSON(http.StatusCreated, models.Response{
 		Message: "Submitted task",
 	})
+}
+
+func (sC StudentController) GetTasks(c echo.Context) error {
+
+	return nil
 }

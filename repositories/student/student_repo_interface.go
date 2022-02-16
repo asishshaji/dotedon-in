@@ -14,4 +14,6 @@ type IStudentRepository interface {
 	GetMentors(ctx context.Context) ([]*models.MentorDTO, error)
 	AddMentorToStudent(ctx context.Context, userId primitive.ObjectID, mentorId primitive.ObjectID) error
 	TaskSubmission(ctx context.Context, task models.TaskSubmission) error
+	GetTasks(ctx context.Context, typeVar string) ([]models.Task, error)
+	GetTaskSubmissions(ctx context.Context, userId primitive.ObjectID) ([]models.TaskSubmission, error)
 }

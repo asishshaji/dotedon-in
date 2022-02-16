@@ -8,4 +8,5 @@ type IStudentController interface {
 	GetMentors(c echo.Context) error
 	AddMentorToStudent(c echo.Context) error
 	TaskSubmission(c echo.Context) error
+	GetTasks(c echo.Context) error
 }
