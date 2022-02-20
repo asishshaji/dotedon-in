@@ -113,7 +113,7 @@ type Task struct {
 	Detail    string             `json:"detail"`
 	CreatedAt primitive.DateTime `json:"created_at"`
 	UpdatedAt primitive.DateTime `json:"updated_at"`
-	CreatorID primitive.ObjectID
+	CreatorID primitive.ObjectID `json:"creator_id"`
 }
 
 type TaskUpdate struct {

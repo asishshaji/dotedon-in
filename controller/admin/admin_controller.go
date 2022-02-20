@@ -78,9 +78,6 @@ func (aC AdminController) AddTask(c echo.Context) error {
 
 func (aC AdminController) UpdateTask(c echo.Context) error {
 
-	taskId := c.FormValue("task_id")
-	taskObjId, _ := primitive.ObjectIDFromHex(taskId)
-
 	task := models.TaskUpdate{}
 
 	if err := json.NewDecoder(c.Request().Body).Decode(&task); err != nil {
@@ -88,8 +85,6 @@ func (aC AdminController) UpdateTask(c echo.Context) error {
 		return echo.ErrBadRequest
 
 	}
-
-	task.Id = taskObjId
 
 	err := task.Validate()
 	if err != nil {
@@ -118,4 +113,8 @@ func (aC AdminController) GetTasks(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, tasks)
+}
+
+func (aC AdminController) GetUsers(c echo.Context) error {
+	return nil
 }

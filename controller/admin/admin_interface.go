@@ -7,4 +7,5 @@ type IAdminController interface {
 	AddTask(c echo.Context) error
 	UpdateTask(c echo.Context) error
 	GetTasks(c echo.Context) error
+	GetUsers(c echo.Context) error
 }

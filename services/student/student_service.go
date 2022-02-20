@@ -157,12 +157,12 @@ func (sS StudentService) GetTasks(ctx context.Context, studentId primitive.Objec
 
 	for _, t := range tasks {
 
-		fileUrl, comment := getFileAndCommentsForTaskIdAndUserId(taskSubmission, t.Id, studentId)
+		fileUrl, comment, status := getFileAndCommentsForTaskIdAndUserId(taskSubmission, t.Id, studentId)
 		taskStudentResponse = append(taskStudentResponse, models.TaskStudentResponse{
 			ID:        t.Id,
 			Title:     t.Title,
 			Detail:    t.Detail,
-			Status:    models.Status(t.Type),
+			Status:    status,
 			FileURL:   fileUrl,
 			Comments:  comment,
 			UpdatedAt: "",
@@ -172,11 +172,11 @@ func (sS StudentService) GetTasks(ctx context.Context, studentId primitive.Objec
 	return taskStudentResponse, nil
 }
 
-func getFileAndCommentsForTaskIdAndUserId(tS []models.TaskSubmission, taskID, userID primitive.ObjectID) (string, string) {
+func getFileAndCommentsForTaskIdAndUserId(tS []models.TaskSubmission, taskID, userID primitive.ObjectID) (string, string, models.Status) {
 	for _, t := range tS {
 		if t.TaskId == taskID && t.UserId == userID {
-			return t.FileURL, t.Comment
+			return t.FileURL, t.Comment, t.Status
 		}
 	}
-	return "", ""
+	return "", "", models.INACTIVE // havent started yet
 }
