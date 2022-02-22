@@ -9,6 +9,7 @@ import (
 	"github.com/asishshaji/dotedon-api/models"
 	admin_repository "github.com/asishshaji/dotedon-api/repositories/admin"
 	"github.com/asishshaji/dotedon-api/utils"
+	"github.com/go-redis/redis/v8"
 	"github.com/golang-jwt/jwt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -16,12 +17,14 @@ import (
 type AdminService struct {
 	l         *log.Logger
 	adminRepo admin_repository.IAdminRepository
+	rClient   *redis.Client
 }
 
-func NewAdminService(l *log.Logger, adminRepo admin_repository.IAdminRepository) IAdminService {
+func NewAdminService(l *log.Logger, adminRepo admin_repository.IAdminRepository, rClient *redis.Client) IAdminService {
 	return AdminService{
 		l:         l,
 		adminRepo: adminRepo,
+		rClient:   rClient,
 	}
 }
 
@@ -82,4 +85,19 @@ func (aS AdminService) UpdateTask(ctx context.Context, task models.TaskUpdate) e
 
 func (aS AdminService) GetTasks(ctx context.Context) ([]models.Task, error) {
 	return aS.adminRepo.GetTasks(ctx)
+}
+
+func (aS AdminService) GetUsers(ctx context.Context) ([]models.StudentResponse, error) {
+	studentModels, err := aS.adminRepo.GetUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	studentResponse := studentModels.ToStudentResponse()
+
+	return studentResponse, nil
+}
+
+func (aS AdminService) DeleteTask(c context.Context, taskId primitive.ObjectID) error {
+	return aS.adminRepo.DeleteTask(c, taskId)
 }

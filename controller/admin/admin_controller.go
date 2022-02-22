@@ -116,5 +116,33 @@ func (aC AdminController) GetTasks(c echo.Context) error {
 }
 
 func (aC AdminController) GetUsers(c echo.Context) error {
+	students, err := aC.adminService.GetUsers(c.Request().Context())
+
+	if err != nil {
+		return echo.ErrInternalServerError
+	}
+
+	return c.JSON(http.StatusOK, students)
+}
+
+func (aC AdminController) CreateType(c echo.Context) error {
 	return nil
+}
+
+func (aC AdminController) DeleteTask(c echo.Context) error {
+	id := c.FormValue("task_id")
+	taskId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		aC.l.Println("Error parsing task id")
+		return echo.ErrInternalServerError
+	}
+
+	err = aC.adminService.DeleteTask(c.Request().Context(), taskId)
+	if err != nil {
+		return echo.ErrInternalServerError
+	}
+
+	return c.JSON(http.StatusAccepted, models.Response{
+		Message: "deleted task",
+	})
 }

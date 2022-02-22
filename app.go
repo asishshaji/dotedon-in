@@ -60,6 +60,8 @@ func NewApp(port string, controller Controllers) *App {
 	adminGroup.POST("/task", controller.AdminController.AddTask)
 	adminGroup.PUT("/task", controller.AdminController.UpdateTask)
 	adminGroup.GET("/task", controller.AdminController.GetTasks)
+	adminGroup.DELETE("/task", controller.AdminController.DeleteTask)
+	adminGroup.GET("/users", controller.AdminController.GetUsers)
 
 	return &App{
 		app:  e,

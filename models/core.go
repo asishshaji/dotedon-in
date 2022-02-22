@@ -25,6 +25,16 @@ type Response struct {
 
 type Gender int32
 
+func (g Gender) String() string {
+	switch g {
+	case MALE:
+		return "male"
+	case FEMALE:
+		return "female"
+	}
+	return ""
+}
+
 const (
 	MALE   Gender = 1
 	FEMALE Gender = 2
@@ -69,6 +79,43 @@ type Student struct {
 	DateOfJoining    string               `json:"date_of_joining"`
 	CourseEndingDate string               `json:"course_ending_date"`
 	Mentors          []primitive.ObjectID `json:"-"`
+}
+
+type Students []Student
+
+func (students Students) ToStudentResponse() []StudentResponse {
+	studentReponse := []StudentResponse{}
+
+	for _, stu := range students {
+		studentReponse = append(studentReponse, StudentResponse{
+			ID:               stu.ID,
+			Username:         stu.Username,
+			FirstName:        stu.FirstName,
+			PreferedType:     stu.PreferedType,
+			LastName:         stu.LastName,
+			MiddleName:       stu.MiddleName,
+			CreatedAt:        stu.CreatedAt,
+			UpdatedAt:        stu.UpdatedAt,
+			DOB:              stu.DOB,
+			Gender:           Gender(stu.Gender).String(),
+			PhoneNumber:      stu.PhoneNumber,
+			PhoneNumberAlt:   stu.PhoneNumberAlt,
+			College:          stu.College,
+			Course:           stu.Course,
+			Specialization:   stu.Specialization,
+			HasArrears:       stu.HasArrears,
+			Place:            stu.Place,
+			Semester:         stu.Semester,
+			District:         stu.District,
+			State:            stu.State,
+			Country:          stu.Country,
+			DateOfJoining:    stu.DateOfJoining,
+			CourseEndingDate: stu.CourseEndingDate,
+		})
+	}
+
+	return studentReponse
+
 }
 
 var ErrStudentExists = fmt.Errorf("Student already exists")
@@ -155,3 +202,8 @@ type TaskSubmission struct {
 }
 
 var ErrTaskSubmissionExists = fmt.Errorf("Task submission already exists")
+
+type Type struct {
+	Name      string
+	CreatedOn primitive.DateTime
+}

@@ -9,6 +9,7 @@ import (
 	"github.com/asishshaji/dotedon-api/models"
 	student_repository "github.com/asishshaji/dotedon-api/repositories/student"
 	"github.com/asishshaji/dotedon-api/utils"
+	"github.com/go-redis/redis/v8"
 	"github.com/golang-jwt/jwt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -16,12 +17,14 @@ import (
 type StudentService struct {
 	studentRepo student_repository.IStudentRepository
 	l           *log.Logger
+	rClient     *redis.Client
 }
 
-func NewStudentService(l *log.Logger, uR student_repository.IStudentRepository) IStudentService {
+func NewStudentService(l *log.Logger, uR student_repository.IStudentRepository, rClient *redis.Client) IStudentService {
 	return StudentService{
 		studentRepo: uR,
 		l:           l,
+		rClient:     rClient,
 	}
 }
 

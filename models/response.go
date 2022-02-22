@@ -2,15 +2,17 @@ package models
 
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
-type UserResponse struct {
+type StudentResponse struct {
+	ID               primitive.ObjectID `json:"_id"`
 	Username         string             `json:"username"`
 	FirstName        string             `json:"first_name"`
+	PreferedType     PreferedType       `json:"type"`
 	LastName         string             `json:"last_name"`
 	MiddleName       string             `json:"middle_name"`
 	CreatedAt        primitive.DateTime `json:"created_at"`
 	UpdatedAt        primitive.DateTime `json:"updated_at"`
 	DOB              string             `json:"dob"`
-	Gender           Gender             `json:"gender"`
+	Gender           string             `json:"gender"`
 	PhoneNumber      string             `json:"phone_number"`
 	PhoneNumberAlt   string             `json:"phone_number_alt"`
 	College          string             `json:"college"`
@@ -24,7 +26,6 @@ type UserResponse struct {
 	Country          string             `json:"country"`
 	DateOfJoining    string             `json:"date_of_joining"`
 	CourseEndingDate string             `json:"course_ending_date"`
-	Mentors          []MentorResponse   `json:"mentors"`
 }
 
 type MentorResponse struct {
