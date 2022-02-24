@@ -14,4 +14,5 @@ type IAdminService interface {
 	DeleteTask(c context.Context, taskId primitive.ObjectID) error
 	GetTasks(ctx context.Context) ([]models.Task, error)
 	GetUsers(ctx context.Context) ([]models.StudentResponse, error)
+	GetTaskSubmissions(c context.Context) ([]models.TaskSubmissionsAdminResponse, error)
 }

@@ -128,7 +128,9 @@ func (sS StudentService) TaskSubmission(ctx context.Context, taskDto models.Task
 	task.UserId = userID
 	task.Comment = taskDto.Comment
 	task.FileURL = taskDto.FileURL
-	task.Status = taskDto.Status
+	task.Status = models.ACTIVE
+	task.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
+	task.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
 
 	err = sS.studentRepo.TaskSubmission(ctx, task)
 	if err != nil {

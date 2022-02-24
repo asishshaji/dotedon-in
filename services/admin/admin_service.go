@@ -101,3 +101,7 @@ func (aS AdminService) GetUsers(ctx context.Context) ([]models.StudentResponse, 
 func (aS AdminService) DeleteTask(c context.Context, taskId primitive.ObjectID) error {
 	return aS.adminRepo.DeleteTask(c, taskId)
 }
+
+func (aS AdminService) GetTaskSubmissions(c context.Context) ([]models.TaskSubmissionsAdminResponse, error) {
+	return aS.adminRepo.GetTaskSubmissions(c)
+}

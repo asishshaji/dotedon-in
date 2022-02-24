@@ -10,4 +10,5 @@ type IAdminController interface {
 	DeleteTask(c echo.Context) error
 	GetUsers(c echo.Context) error
 	CreateType(c echo.Context) error
+	GetTaskSubmissions(c echo.Context) error
 }

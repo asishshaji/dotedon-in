@@ -15,4 +15,5 @@ type IAdminRepository interface {
 	GetTasks(ctx context.Context) ([]models.Task, error)
 	CreateType(ctx context.Context, typeT models.Type) error
 	GetUsers(ctx context.Context) (models.Students, error)
+	GetTaskSubmissions(c context.Context) ([]models.TaskSubmissionsAdminResponse, error)
 }

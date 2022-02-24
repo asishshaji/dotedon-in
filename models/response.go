@@ -3,7 +3,7 @@ package models
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type StudentResponse struct {
-	ID               primitive.ObjectID `json:"_id"`
+	ID               primitive.ObjectID `json:"id"`
 	Username         string             `json:"username"`
 	FirstName        string             `json:"first_name"`
 	PreferedType     PreferedType       `json:"type"`
@@ -44,4 +44,22 @@ type TaskStudentResponse struct {
 	FileURL   string             `json:"file_url"`
 	Comments  string             `json:"comments"`
 	UpdatedAt string             `json:"updated_at"`
+}
+
+type StudentTaskRespone struct {
+	Username string             `json:"username"`
+	Id       primitive.ObjectID `json:"_id" bson:"_id"`
+}
+
+type TaskSubmissionsAdminResponse struct {
+	ID       primitive.ObjectID `json:"_id" bson:"_id"`
+	Username string             `json:"username"`
+	Title    string             `json:"string"`
+	Detail   string             `json:"detail"`
+	FileURL  string             `json:"fileurl"`
+	Status   Status             `json:"status"`
+	Comments string             `json:"comment"`
+	Task     Task               `json:"task"`
+	Student  StudentTaskRespone `json:"student"`
+	// UpdatedAt primitive.DateTime `json:"updated_at"`
 }

@@ -14,20 +14,23 @@ import (
 )
 
 type AdminRepository struct {
-	l                 *log.Logger
-	adminCollection   *mongo.Collection
-	taskCollection    *mongo.Collection
-	typeCollection    *mongo.Collection
-	studentCollection *mongo.Collection
+	l                        *log.Logger
+	adminCollection          *mongo.Collection
+	taskCollection           *mongo.Collection
+	typeCollection           *mongo.Collection
+	studentCollection        *mongo.Collection
+	taskSubmissionCollection *mongo.Collection
 }
 
 func NewAdminRepository(l *log.Logger, db *mongo.Database) IAdminRepository {
 	return AdminRepository{
-		l:                 l,
-		adminCollection:   db.Collection("admin"),
-		taskCollection:    db.Collection("tasks"),
-		typeCollection:    db.Collection("types"),
-		studentCollection: db.Collection("students"),
+		l:               l,
+		adminCollection: db.Collection("admin"),
+
+		taskCollection:           db.Collection("tasks"),
+		typeCollection:           db.Collection("types"),
+		studentCollection:        db.Collection("students"),
+		taskSubmissionCollection: db.Collection("task_submission"),
 	}
 }
 
@@ -137,4 +140,92 @@ func (aR AdminRepository) DeleteTask(ctx context.Context, taskId primitive.Objec
 		return err
 	}
 	return nil
+}
+
+func (aR AdminRepository) GetTaskSubmissions(c context.Context) ([]models.TaskSubmissionsAdminResponse, error) {
+
+	lookupStage1 := bson.D{{
+		"$lookup", bson.D{{
+			"from", "students",
+		}, {
+			"localField", "userid",
+		}, {
+			"foreignField", "_id",
+		}, {
+			"as", "student",
+		}},
+	}}
+
+	unwindStage1 := bson.D{{
+		"$unwind", bson.D{{
+			"path", "$student",
+		}},
+	}}
+
+	projectStage1 := bson.D{{
+		"$project", bson.D{
+			{
+				"student.username", 1,
+			},
+			{
+				"student._id", 1,
+			},
+			{
+				"_id", 1,
+			},
+			{
+				"taskid", 1,
+			},
+			{
+				"comment", 1,
+			},
+			{
+				"fileurl", 1,
+			},
+			{
+				"status", 1,
+			},
+		},
+	}}
+
+	lookupStage2 := bson.D{{
+		"$lookup", bson.D{{
+			"from", "tasks",
+		},
+			{
+				"localField", "taskid",
+			},
+			{
+				"foreignField", "_id",
+			},
+			{
+				"as", "task",
+			},
+		},
+	}}
+
+	unwindStage2 := bson.D{{
+		"$unwind", bson.D{{
+			"path", "$task",
+		}},
+	}}
+
+	projectStage2 := bson.D{{
+		"$project", bson.D{{
+			"taskid", 0,
+		}},
+	}}
+
+	cursor, err := aR.taskSubmissionCollection.Aggregate(c, mongo.Pipeline{lookupStage1, unwindStage1, projectStage1, lookupStage2, unwindStage2, projectStage2})
+	if err != nil {
+		aR.l.Println(err)
+		return nil, err
+	}
+	var responseData []models.TaskSubmissionsAdminResponse
+	if err = cursor.All(c, &responseData); err != nil {
+		aR.l.Println(err)
+		return nil, err
+	}
+
+	return responseData, nil
 }

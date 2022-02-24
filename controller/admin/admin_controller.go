@@ -146,3 +146,8 @@ func (aC AdminController) DeleteTask(c echo.Context) error {
 		Message: "deleted task",
 	})
 }
+
+func (aC AdminController) GetTaskSubmissions(c echo.Context) error {
+	res, _ := aC.adminService.GetTaskSubmissions(c.Request().Context())
+	return c.JSON(http.StatusOK, res)
+}

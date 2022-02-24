@@ -181,24 +181,26 @@ func (task *TaskUpdate) Validate() error {
 type Status string
 
 const (
-	ACTIVE    Status = "active"    // current sem
-	COMPLETED Status = "completed" // completed
-	INACTIVE  Status = "inactive"  // different sem
+	ACTIVE    Status = "active"    // submitted
+	COMPLETED Status = "completed" // verified by admin
+	INACTIVE  Status = "inactive"  // not started
+	REJECTED  Status = "rejected"
 )
 
 type TaskSubmissionDTO struct {
 	TaskId  string `json:"task_id"`
 	Comment string `json:"comment"`
 	FileURL string `json:"file_url"`
-	Status  Status `json:"status"`
 }
 
 type TaskSubmission struct {
-	UserId  primitive.ObjectID `json:"userid"`
-	TaskId  primitive.ObjectID `json:"taskid"`
-	Comment string             `json:"comment"`
-	FileURL string             `json:"fileurl"`
-	Status  Status             `json:"status"`
+	UserId    primitive.ObjectID `json:"userid"`
+	TaskId    primitive.ObjectID `json:"taskid"`
+	Comment   string             `json:"comment"`
+	FileURL   string             `json:"fileurl"`
+	Status    Status             `json:"status"`
+	CreatedAt primitive.DateTime `json:"created_at"`
+	UpdatedAt primitive.DateTime `json:"updated_at"`
 }
 
 var ErrTaskSubmissionExists = fmt.Errorf("Task submission already exists")
