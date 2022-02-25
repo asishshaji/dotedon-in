@@ -30,10 +30,11 @@ func main() {
 
 	_, err := redisClient.Ping(context.TODO()).Result()
 	if err != nil {
-		logger.Fatalln(err)
+		// logger.Fatalln(err)
+		logger.Println(err)
+	} else {
+		logger.Println("Connected to redis")
 	}
-
-	logger.Println("Connected to redis")
 
 	studentRepo := student_repository.NewStudentAuthRepo(logger, db)
 	studentService := student_service.NewStudentService(logger, studentRepo, redisClient)

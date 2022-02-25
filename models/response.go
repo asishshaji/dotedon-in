@@ -52,14 +52,11 @@ type StudentTaskRespone struct {
 }
 
 type TaskSubmissionsAdminResponse struct {
-	ID       primitive.ObjectID `json:"_id" bson:"_id"`
-	Username string             `json:"username"`
-	Title    string             `json:"string"`
-	Detail   string             `json:"detail"`
-	FileURL  string             `json:"fileurl"`
-	Status   Status             `json:"status"`
-	Comments string             `json:"comment"`
-	Task     Task               `json:"task"`
-	Student  StudentTaskRespone `json:"student"`
+	ID      primitive.ObjectID `json:"_id" bson:"_id"`
+	FileURL string             `json:"fileurl"`
+	Status  Status             `json:"status"`
+	Comment string             `json:"comment"`
+	Task    Task               `json:"task"`
+	Student StudentTaskRespone `json:"student"`
 	// UpdatedAt primitive.DateTime `json:"updated_at"`
 }

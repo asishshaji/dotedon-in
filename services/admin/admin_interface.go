@@ -15,4 +15,6 @@ type IAdminService interface {
 	GetTasks(ctx context.Context) ([]models.Task, error)
 	GetUsers(ctx context.Context) ([]models.StudentResponse, error)
 	GetTaskSubmissions(c context.Context) ([]models.TaskSubmissionsAdminResponse, error)
+	EditTaskSubmission(ctx context.Context, taskId primitive.ObjectID, status models.Status) error
+	GetTaskSubmissionsForUser(ctx context.Context, userId primitive.ObjectID) ([]models.TaskSubmissionsAdminResponse, error)
 }

@@ -2,7 +2,6 @@ package utils
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -87,11 +86,8 @@ func ToDoc(v interface{}) (doc *bson.D, err error) {
 
 func AdminAuthenticationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-
 		admin := c.Get("user").(*jwt.Token)
 		claims := admin.Claims.(*models.AdminJWTClaims)
-		fmt.Println(claims)
-		c.Logger().Print(claims.AdminId)
 		if !claims.IsAdmin {
 			return echo.ErrForbidden
 		}
@@ -105,8 +101,6 @@ func StudentAuthenticationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		user := c.Get("user").(*jwt.Token)
 		claims := user.Claims.(*models.StudentJWTClaims)
-		c.Logger().Print(claims.StudentId)
-
 		c.Set("student_id", claims.StudentId)
 
 		return next(c)

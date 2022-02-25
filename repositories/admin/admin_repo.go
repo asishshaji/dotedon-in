@@ -229,3 +229,117 @@ func (aR AdminRepository) GetTaskSubmissions(c context.Context) ([]models.TaskSu
 
 	return responseData, nil
 }
+
+func (aR AdminRepository) EditTaskSubmissionStatus(c context.Context, status models.Status, taskid primitive.ObjectID) error {
+	res, err := aR.taskSubmissionCollection.UpdateByID(c, taskid, bson.M{
+		"$set": bson.M{
+			"status": status,
+		},
+	})
+
+	if res.MatchedCount == 0 {
+		aR.l.Println(models.ErrNoValidRecordFound)
+		return models.ErrNoValidRecordFound
+	}
+
+	aR.l.Println(res.MatchedCount)
+
+	if err != nil {
+		aR.l.Println(err)
+		return err
+	}
+	return nil
+}
+
+func (aR AdminRepository) GetTaskSubmissionsForUser(c context.Context, userid primitive.ObjectID) ([]models.TaskSubmissionsAdminResponse, error) {
+	filter := bson.D{{
+		"$match", bson.D{{
+			"userid", userid,
+		}},
+	}}
+	lookupStage1 := bson.D{{
+		"$lookup", bson.D{{
+			"from", "students",
+		}, {
+			"localField", "userid",
+		}, {
+			"foreignField", "_id",
+		}, {
+			"as", "student",
+		}},
+	}}
+
+	unwindStage1 := bson.D{{
+		"$unwind", bson.D{{
+			"path", "$student",
+		}},
+	}}
+
+	projectStage1 := bson.D{{
+		"$project", bson.D{
+			{
+				"student.username", 1,
+			},
+			{
+				"student._id", 1,
+			},
+			{
+				"_id", 1,
+			},
+			{
+				"taskid", 1,
+			},
+			{
+				"comment", 1,
+			},
+			{
+				"fileurl", 1,
+			},
+			{
+				"status", 1,
+			},
+		},
+	}}
+
+	lookupStage2 := bson.D{{
+		"$lookup", bson.D{{
+			"from", "tasks",
+		},
+			{
+				"localField", "taskid",
+			},
+			{
+				"foreignField", "_id",
+			},
+			{
+				"as", "task",
+			},
+		},
+	}}
+
+	unwindStage2 := bson.D{{
+		"$unwind", bson.D{{
+			"path", "$task",
+		}},
+	}}
+
+	projectStage2 := bson.D{{
+		"$project", bson.D{{
+			"taskid", 0,
+		}},
+	}}
+
+	cursor, err := aR.taskSubmissionCollection.Aggregate(c, mongo.Pipeline{filter, lookupStage1, unwindStage1, projectStage1, lookupStage2, unwindStage2, projectStage2})
+	if err != nil {
+		aR.l.Println(err)
+		return nil, err
+	}
+	var responseData []models.TaskSubmissionsAdminResponse
+	if err = cursor.All(c, &responseData); err != nil {
+		aR.l.Println(err)
+		return nil, err
+	}
+
+	return responseData, nil
+
+}

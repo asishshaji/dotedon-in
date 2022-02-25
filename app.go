@@ -28,6 +28,10 @@ type Controllers struct {
 func NewApp(port string, controller Controllers) *App {
 	e := echo.New()
 
+	e.Use(middleware.Logger())
+	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(20)))
+	e.Use(middleware.Secure())
+
 	uG := e.Group("/student")
 	uG.POST("", controller.StudentController.RegisterStudent)
 	uG.POST("/login", controller.StudentController.LoginStudent)
@@ -62,7 +66,9 @@ func NewApp(port string, controller Controllers) *App {
 	adminGroup.GET("/task", controller.AdminController.GetTasks)
 	adminGroup.DELETE("/task", controller.AdminController.DeleteTask)
 	adminGroup.GET("/users", controller.AdminController.GetUsers)
-	adminGroup.GET("/tasksubmission", controller.AdminController.GetTaskSubmissions)
+	adminGroup.GET("/submission", controller.AdminController.GetTaskSubmissions)
+	adminGroup.PUT("/submission", controller.AdminController.EditTaskSubmissionStatus)
+	adminGroup.GET("/user/submission/:id", controller.AdminController.GetTaskSubmissionForUser)
 
 	return &App{
 		app:  e,

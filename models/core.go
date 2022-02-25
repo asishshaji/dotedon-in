@@ -187,6 +187,20 @@ const (
 	REJECTED  Status = "rejected"
 )
 
+func (s Status) String() string {
+	switch s {
+	case ACTIVE:
+		return "active"
+	case COMPLETED:
+		return "completed"
+	case INACTIVE:
+		return "inactive"
+	case REJECTED:
+		return "rejected"
+	}
+	return ""
+}
+
 type TaskSubmissionDTO struct {
 	TaskId  string `json:"task_id"`
 	Comment string `json:"comment"`
@@ -209,3 +223,5 @@ type Type struct {
 	Name      string
 	CreatedOn primitive.DateTime
 }
+
+var ErrNoValidRecordFound = fmt.Errorf("No valid document found")

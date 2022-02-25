@@ -151,3 +151,64 @@ func (aC AdminController) GetTaskSubmissions(c echo.Context) error {
 	res, _ := aC.adminService.GetTaskSubmissions(c.Request().Context())
 	return c.JSON(http.StatusOK, res)
 }
+
+func (aC AdminController) EditTaskSubmissionStatus(c echo.Context) error {
+	// get task id, check if task submission exists
+	// get task status, update task submission
+	json_map := make(map[string]interface{})
+	err := json.NewDecoder(c.Request().Body).Decode(&json_map)
+	if err != nil {
+		aC.l.Println(err)
+		return echo.ErrInternalServerError
+	}
+	statusString := fmt.Sprintf("%v", json_map["status"])
+
+	taskId := fmt.Sprintf("%v", json_map["task_id"])
+
+	if statusString == "" {
+		aC.l.Println("Error parsing status")
+		return echo.ErrInternalServerError
+	}
+
+	aC.l.Println(statusString, taskId)
+
+	// status, err = primitive.ObjectIDFromHex(models.Status(status).String())
+	taskIdObj, err := primitive.ObjectIDFromHex(taskId)
+	if err != nil {
+		aC.l.Println(err)
+		return echo.ErrInternalServerError
+	}
+
+	// if !primitive.IsValidObjectID(taskIdObj.String()) {
+	// 	aC.l.Println("Invalid task id")
+	// 	return c.JSON(http.StatusInternalServerError, models.Response{
+	// 		Message: "invalid task id",
+	// 	})
+	// }
+
+	aC.l.Println(taskIdObj)
+
+	err = aC.adminService.EditTaskSubmission(c.Request().Context(), taskIdObj, models.Status(statusString))
+	if err != nil {
+		return echo.ErrInternalServerError
+	}
+
+	return c.JSON(http.StatusAccepted, models.Response{
+		Message: "edited task submission",
+	})
+}
+
+func (aC AdminController) GetTaskSubmissionForUser(c echo.Context) error {
+	userId := c.Param("id")
+	userIdObj, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		aC.l.Println("Error parsing user id")
+		return echo.ErrInternalServerError
+	}
+	tasks, err := aC.adminService.GetTaskSubmissionsForUser(c.Request().Context(), userIdObj)
+	if err != nil {
+		return echo.ErrInternalServerError
+	}
+
+	return c.JSON(http.StatusOK, tasks)
+}

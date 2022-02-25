@@ -105,3 +105,12 @@ func (aS AdminService) DeleteTask(c context.Context, taskId primitive.ObjectID) 
 func (aS AdminService) GetTaskSubmissions(c context.Context) ([]models.TaskSubmissionsAdminResponse, error) {
 	return aS.adminRepo.GetTaskSubmissions(c)
 }
+func (aS AdminService) EditTaskSubmission(ctx context.Context, taskId primitive.ObjectID, status models.Status) error {
+	return aS.adminRepo.EditTaskSubmissionStatus(ctx, status, taskId)
+}
+
+func (aS AdminService) GetTaskSubmissionsForUser(ctx context.Context, userId primitive.ObjectID) ([]models.TaskSubmissionsAdminResponse, error) {
+
+	return aS.adminRepo.GetTaskSubmissionsForUser(ctx, userId)
+
+}
