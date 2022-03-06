@@ -3,6 +3,7 @@ package admin_repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/asishshaji/dotedon-api/models"
@@ -20,13 +21,15 @@ type AdminRepository struct {
 	typeCollection           *mongo.Collection
 	studentCollection        *mongo.Collection
 	taskSubmissionCollection *mongo.Collection
+	mentorCollection         *mongo.Collection
 }
 
 func NewAdminRepository(l *log.Logger, db *mongo.Database) IAdminRepository {
-	return AdminRepository{
-		l:               l,
-		adminCollection: db.Collection("admin"),
 
+	return AdminRepository{
+		l:                        l,
+		adminCollection:          db.Collection("admin"),
+		mentorCollection:         db.Collection("mentor"),
 		taskCollection:           db.Collection("tasks"),
 		typeCollection:           db.Collection("types"),
 		studentCollection:        db.Collection("students"),
@@ -68,7 +71,7 @@ func (aR AdminRepository) AddTask(ctx context.Context, task models.Task) error {
 	return nil
 }
 
-func (aR AdminRepository) UpdateTask(ctx context.Context, task models.TaskUpdate) error {
+func (aR AdminRepository) UpdateTask(ctx context.Context, task models.Task) error {
 	opts := options.Update().SetUpsert(true)
 
 	up, err := utils.ToDoc(task)
@@ -342,4 +345,62 @@ func (aR AdminRepository) GetTaskSubmissionsForUser(c context.Context, userid pr
 
 	return responseData, nil
 
+}
+
+func (aR AdminRepository) CreateMentor(c context.Context, mentor models.Mentor) error {
+	fmt.Println(mentor.Domain)
+	res, err := aR.mentorCollection.InsertOne(c, mentor)
+
+	if mongo.IsDuplicateKeyError(err) {
+		aR.l.Println("mentor already exists")
+		return models.ErrMentorExists
+	}
+
+	if err != nil {
+		aR.l.Println("Failed to create mentor")
+		return err
+	}
+
+	aR.l.Println("Inserted mentor with ID", res.InsertedID)
+
+	return nil
+}
+
+func (aR AdminRepository) UpdateMentor(c context.Context, mentor models.Mentor) error {
+	opts := options.Update().SetUpsert(true)
+
+	up, err := utils.ToDoc(mentor)
+
+	if err != nil {
+		return err
+	}
+
+	doc := bson.M{"$set": up}
+
+	res, err := aR.mentorCollection.UpdateByID(c, mentor.ID, doc, opts)
+	if err != nil {
+		aR.l.Println(err)
+		return err
+	}
+	aR.l.Println(res.MatchedCount)
+	return nil
+}
+
+func (aR AdminRepository) GetMentors(c context.Context) ([]models.Mentor, error) {
+	mentors := []models.Mentor{}
+
+	cursor, err := aR.mentorCollection.Find(c, bson.M{})
+
+	if err != nil {
+		aR.l.Println(err)
+
+		return nil, err
+	}
+
+	if err = cursor.All(c, &mentors); err != nil {
+		aR.l.Println(err)
+		return nil, err
+	}
+
+	return mentors, nil
 }

@@ -21,7 +21,7 @@ type studentRepo struct {
 func NewStudentAuthRepo(l *log.Logger, db *mongo.Database) IStudentRepository {
 	return studentRepo{
 		studentCollection:        db.Collection("students"),
-		mentorCollection:         db.Collection("mentors"),
+		mentorCollection:         db.Collection("mentor"),
 		taskSubmissionCollection: db.Collection("task_submission"),
 		taskCollection:           db.Collection("tasks"),
 		l:                        l,
@@ -67,11 +67,13 @@ func (uR studentRepo) GetStudentByStudentname(ctx context.Context, studentname s
 
 }
 
-func (uR studentRepo) GetMentors(ctx context.Context) ([]*models.MentorDTO, error) {
+func (uR studentRepo) GetMentorsNotInIDS(ctx context.Context, ids []primitive.ObjectID) ([]*models.Mentor, error) {
 
-	mentors := []*models.MentorDTO{}
+	mentors := []*models.Mentor{}
 
-	cursor, err := uR.mentorCollection.Find(ctx, bson.M{})
+	cursor, err := uR.mentorCollection.Find(ctx, bson.M{
+		"_id": bson.M{"$nin": ids},
+	})
 
 	if err != nil {
 		uR.l.Println(err)
@@ -194,4 +196,37 @@ func (sR studentRepo) GetStudentByID(ctx context.Context, studentID primitive.Ob
 
 	return student, nil
 
+}
+
+func (sR studentRepo) GetMentorIDsFollowedByStudent(ctx context.Context, userid primitive.ObjectID) ([]primitive.ObjectID, error) {
+
+	cursor, err := sR.studentCollection.Aggregate(ctx, mongo.Pipeline{
+
+		bson.D{{
+			"$match", bson.D{{
+				"_id", userid,
+			}},
+		}},
+
+		bson.D{{
+			"$project", bson.D{{
+				"_id", 0,
+			}, {
+				"mentors", 1,
+			}},
+		}},
+	})
+	if err != nil {
+		sR.l.Println(err)
+		return nil, err
+	}
+
+	mentors := []models.TT{}
+
+	if err = cursor.All(ctx, &mentors); err != nil {
+		sR.l.Println(err)
+		return nil, err
+	}
+
+	return mentors[0].Mentors, nil
 }

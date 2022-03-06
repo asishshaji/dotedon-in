@@ -70,6 +70,10 @@ func NewApp(port string, controller Controllers) *App {
 	adminGroup.PUT("/submission", controller.AdminController.EditTaskSubmissionStatus)
 	adminGroup.GET("/user/submission/:id", controller.AdminController.GetTaskSubmissionForUser)
 
+	adminGroup.GET("/mentor", controller.AdminController.GetMentors)
+	adminGroup.POST("/mentor", controller.AdminController.CreateMentor)
+	adminGroup.PUT("/mentor", controller.AdminController.UpdateMentor)
+
 	return &App{
 		app:  e,
 		port: port,
@@ -82,7 +86,7 @@ func (a *App) RunServer() {
 		a.app.Logger.Fatal(a.app.Start(a.port))
 	}()
 
-	sigChan := make(chan os.Signal)
+	sigChan := make(chan os.Signal, 2)
 	signal.Notify(sigChan, os.Interrupt)
 	signal.Notify(sigChan, os.Kill)
 

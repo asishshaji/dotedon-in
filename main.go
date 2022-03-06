@@ -22,6 +22,9 @@ func main() {
 	env := utils.LoadEnv(logger)
 	db := env.ConnectToDB()
 
+	// logger.Println("Creating indices for mongodb collections")
+	// utils.CreateIndex(db, "mentor", "name", true)
+
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "",

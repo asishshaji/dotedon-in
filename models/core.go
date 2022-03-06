@@ -1,8 +1,6 @@
 package models
 
 import (
-	"fmt"
-
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -23,35 +21,11 @@ type Response struct {
 	Message interface{} `json:"message"`
 }
 
-type Gender int32
-
-func (g Gender) String() string {
-	switch g {
-	case MALE:
-		return "male"
-	case FEMALE:
-		return "female"
-	}
-	return ""
-}
-
-const (
-	MALE   Gender = 1
-	FEMALE Gender = 2
-)
-
 type Admin struct {
 	ID       primitive.ObjectID `bson:"_id"`
 	Username string             `json:"username"`
 	Password string             `json:"-"`
 }
-
-type PreferedType string
-
-const (
-	EDTECH PreferedType = "ed-tech"
-	RETAIL PreferedType = "retail"
-)
 
 type Student struct {
 	ID               primitive.ObjectID   `bson:"_id" json:"_id"`
@@ -118,37 +92,33 @@ func (students Students) ToStudentResponse() []StudentResponse {
 
 }
 
-var ErrStudentExists = fmt.Errorf("Student already exists")
-var ErrInvalidCredentials = fmt.Errorf("Invalid credentials")
-var ErrNoStudentExists = fmt.Errorf("No Student with given studentname")
-var ErrNoStudentWithIdExists = fmt.Errorf("No Student with id exists")
-var ErrParsingStudent = fmt.Errorf("Error parsing student data from database")
-
-var ErrNoAdminWithUsername = fmt.Errorf("No admin with username exists")
-
-func (Student *Student) ValidateStudent() error {
-	validate := validator.New()
-
-	return validate.Struct(Student)
-}
-
-type MentorDTO struct {
+type Mentor struct {
+	ID           primitive.ObjectID `json:"id" bson:"_id"`
 	Name         string             `json:"name" validate:"required"`
 	Title        string             `json:"title" validate:"required"`
-	Organization string             `json:"orginization" validate:"required"`
+	Organization string             `json:"organization" validate:"required"`
 	Domain       string             `json:"domain" validate:"required"`
-	CreatedAt    primitive.DateTime `json:"-"`
-	UpdatedAt    primitive.DateTime `json:"-"`
+	Image        string             `json:"image"`
+	CreatedAt    primitive.DateTime `bson:",omitempty"`
+	UpdatedAt    primitive.DateTime `bson:",omitempty"`
 }
 
-func (dto *MentorDTO) ToResponse() *MentorResponse {
+func (mentor *Mentor) Validate() error {
+	validate := validator.New()
+
+	return validate.Struct(mentor)
+}
+
+func (dto *Mentor) ToResponse() *MentorResponse {
 
 	return &MentorResponse{
+		ID:           dto.ID,
 		Name:         dto.Name,
 		Title:        dto.Title,
 		Organization: dto.Organization,
-		Domain:       dto.Organization,
+		Domain:       dto.Domain,
 		CreatedAt:    dto.CreatedAt,
+		Image:        dto.Image,
 	}
 }
 
@@ -158,53 +128,9 @@ type Task struct {
 	Type      string             `json:"type"`  // TYPE CAN BE RETAIL, ED-Tech
 	Title     string             `json:"title"` // title of task
 	Detail    string             `json:"detail"`
-	CreatedAt primitive.DateTime `json:"created_at"`
-	UpdatedAt primitive.DateTime `json:"updated_at"`
+	CreatedAt primitive.DateTime `json:"created_at" bson:",omitempty"`
+	UpdatedAt primitive.DateTime `json:"updated_at" bson:",omitempty"`
 	CreatorID primitive.ObjectID `json:"creator_id"`
-}
-
-type TaskUpdate struct {
-	Id        primitive.ObjectID `json:"id"`
-	Semester  string             `json:"semester" validate:"required"`
-	Type      string             `json:"type" validate:"required"`
-	Title     string             `json:"title" validate:"required"` // title of task
-	Detail    string             `json:"detail" validate:"required"`
-	UpdatedAt primitive.DateTime `json:"updated_at"`
-}
-
-func (task *TaskUpdate) Validate() error {
-	validate := validator.New()
-
-	return validate.Struct(task)
-}
-
-type Status string
-
-const (
-	ACTIVE    Status = "active"    // submitted
-	COMPLETED Status = "completed" // verified by admin
-	INACTIVE  Status = "inactive"  // not started
-	REJECTED  Status = "rejected"
-)
-
-func (s Status) String() string {
-	switch s {
-	case ACTIVE:
-		return "active"
-	case COMPLETED:
-		return "completed"
-	case INACTIVE:
-		return "inactive"
-	case REJECTED:
-		return "rejected"
-	}
-	return ""
-}
-
-type TaskSubmissionDTO struct {
-	TaskId  string `json:"task_id"`
-	Comment string `json:"comment"`
-	FileURL string `json:"file_url"`
 }
 
 type TaskSubmission struct {
@@ -213,15 +139,15 @@ type TaskSubmission struct {
 	Comment   string             `json:"comment"`
 	FileURL   string             `json:"fileurl"`
 	Status    Status             `json:"status"`
-	CreatedAt primitive.DateTime `json:"created_at"`
-	UpdatedAt primitive.DateTime `json:"updated_at"`
+	CreatedAt primitive.DateTime `bson:",omitempty"`
+	UpdatedAt primitive.DateTime `bson:",omitempty"`
 }
-
-var ErrTaskSubmissionExists = fmt.Errorf("Task submission already exists")
 
 type Type struct {
 	Name      string
 	CreatedOn primitive.DateTime
 }
 
-var ErrNoValidRecordFound = fmt.Errorf("No valid document found")
+type TT struct {
+	Mentors []primitive.ObjectID
+}

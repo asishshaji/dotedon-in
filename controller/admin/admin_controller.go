@@ -55,7 +55,7 @@ func (aC AdminController) AddTask(c echo.Context) error {
 
 	adminId := c.Get("admin_id").(primitive.ObjectID)
 
-	task := models.Task{}
+	task := models.TaskDTO{}
 
 	if err := json.NewDecoder(c.Request().Body).Decode(&task); err != nil {
 		aC.l.Println(err)
@@ -78,7 +78,7 @@ func (aC AdminController) AddTask(c echo.Context) error {
 
 func (aC AdminController) UpdateTask(c echo.Context) error {
 
-	task := models.TaskUpdate{}
+	task := models.TaskDTO{}
 
 	if err := json.NewDecoder(c.Request().Body).Decode(&task); err != nil {
 		aC.l.Println(err)
@@ -211,4 +211,63 @@ func (aC AdminController) GetTaskSubmissionForUser(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, tasks)
+}
+
+func (aC AdminController) CreateMentor(c echo.Context) error {
+	mentor := new(models.MentorDTO)
+
+	if err := json.NewDecoder(c.Request().Body).Decode(mentor); err != nil {
+		aC.l.Println("Error parsing mentor body")
+		return echo.ErrInternalServerError
+	}
+
+	if err := mentor.Validate(); err != nil {
+		aC.l.Println(err)
+		return echo.ErrInternalServerError
+	}
+
+	err := aC.adminService.CreateMentor(c.Request().Context(), *mentor)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, models.Response{
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusCreated, models.Response{
+		Message: "created mentor",
+	})
+}
+
+func (aC AdminController) UpdateMentor(c echo.Context) error {
+
+	mentor := models.MentorDTO{}
+
+	if err := json.NewDecoder(c.Request().Body).Decode(&mentor); err != nil {
+		aC.l.Println("Error parsing mentor")
+		return echo.ErrInternalServerError
+	}
+
+	if err := mentor.Validate(); err != nil {
+		aC.l.Println(err)
+		return echo.ErrInternalServerError
+	}
+
+	err := aC.adminService.UpdateMentor(c.Request().Context(), mentor)
+	if err != nil {
+		return echo.ErrInternalServerError
+	}
+	return c.JSON(http.StatusAccepted, models.Response{
+		Message: "updated mentor",
+	})
+}
+
+func (aC AdminController) GetMentors(c echo.Context) error {
+	mentors, err := aC.adminService.GetMentors(c.Request().Context())
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, models.Response{
+			Message: err.Error(),
+		})
+	}
+	return c.JSON(http.StatusOK, mentors)
 }

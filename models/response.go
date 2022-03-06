@@ -29,15 +29,18 @@ type StudentResponse struct {
 }
 
 type MentorResponse struct {
+	ID           primitive.ObjectID `json:"_id"`
 	Name         string             `json:"name"`
 	Title        string             `json:"title"`
-	Organization string             `json:"orginization"`
+	Organization string             `json:"organization"`
 	Domain       string             `json:"domain"`
 	CreatedAt    primitive.DateTime `json:"created_at"`
+	Image        string             `json:"image"`
 }
 
 type TaskStudentResponse struct {
 	ID        primitive.ObjectID `json:"_id"`
+	Semester  string             `json:"semester"`
 	Title     string             `json:"title"`
 	Detail    string             `json:"detail"`
 	Status    Status             `json:"status"`

@@ -8,9 +8,9 @@ import (
 )
 
 type IStudentService interface {
-	RegisterStudent(ctx context.Context, student *models.Student) error
+	RegisterStudent(ctx context.Context, student *models.StudentDTO) error
 	LoginStudent(ctx context.Context, studentname, password string) (string, error)
-	GetMentors(ctx context.Context) ([]*models.MentorResponse, error)
+	GetMentors(ctx context.Context, userid primitive.ObjectID) ([]*models.MentorResponse, error)
 	AddMentorToStudent(ctx context.Context, studentId, mentorId primitive.ObjectID) error
 	TaskSubmission(ctx context.Context, taskDto models.TaskSubmissionDTO, userID primitive.ObjectID) error
 	GetTasks(ctx context.Context, studentId primitive.ObjectID) ([]models.TaskStudentResponse, error)

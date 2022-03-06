@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/asishshaji/dotedon-api/models"
 	student_service "github.com/asishshaji/dotedon-api/services/student"
@@ -27,18 +26,21 @@ func NewStudentController(l *log.Logger, uS student_service.IStudentService) ISt
 
 func (uC StudentController) RegisterStudent(c echo.Context) error {
 
-	userModel := models.Student{}
+	user := models.StudentDTO{}
 
-	if err := json.NewDecoder(c.Request().Body).Decode(&userModel); err != nil {
+	if err := json.NewDecoder(c.Request().Body).Decode(&user); err != nil {
 		uC.l.Println(err)
 		return echo.ErrBadRequest
 
 	}
+	if err := user.Validate(); err != nil {
+		uC.l.Println(err)
+		return c.JSON(http.StatusInternalServerError, models.Response{
+			Message: err.Error(),
+		})
+	}
 
-	userModel.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
-	userModel.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
-
-	err := uC.studentService.RegisterStudent(c.Request().Context(), &userModel)
+	err := uC.studentService.RegisterStudent(c.Request().Context(), &user)
 
 	if err != nil {
 		uC.l.Println(err)
@@ -85,7 +87,7 @@ func (uC StudentController) LoginStudent(c echo.Context) error {
 }
 
 func (uC StudentController) GetMentors(c echo.Context) error {
-	responseDtos, err := uC.studentService.GetMentors(c.Request().Context())
+	responseDtos, err := uC.studentService.GetMentors(c.Request().Context(), c.Get("student_id").(primitive.ObjectID))
 	if err != nil {
 		uC.l.Println(err)
 		return c.JSON(http.StatusInternalServerError, models.Response{

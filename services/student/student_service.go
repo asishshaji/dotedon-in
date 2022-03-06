@@ -2,6 +2,7 @@ package student_service
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -28,18 +29,19 @@ func NewStudentService(l *log.Logger, uR student_repository.IStudentRepository, 
 	}
 }
 
-func (authService StudentService) RegisterStudent(ctx context.Context, user *models.Student) error {
+func (authService StudentService) RegisterStudent(ctx context.Context, userDto *models.StudentDTO) error {
 
-	userExists := authService.studentRepo.CheckStudentExistsWithStudentName(ctx, user.Username)
+	// TODO make username as index so this call be aboided
+	userExists := authService.studentRepo.CheckStudentExistsWithStudentName(ctx, userDto.Username)
+
 	if userExists {
 		return models.ErrStudentExists
 	}
 
-	err := user.ValidateStudent()
-	if err != nil {
-		authService.l.Println("Error validating user model", err)
-		return err
-	}
+	user := userDto.ToStudent()
+	user.ID = primitive.NewObjectIDFromTimestamp(time.Now())
+	user.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
+	user.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
 
 	hashedPassword, err := utils.HashPassword(user.Password)
 
@@ -49,10 +51,9 @@ func (authService StudentService) RegisterStudent(ctx context.Context, user *mod
 	}
 
 	user.Password = hashedPassword
-	user.ID = primitive.NewObjectIDFromTimestamp(time.Now())
 	user.Mentors = make([]primitive.ObjectID, 0)
 
-	err = authService.studentRepo.RegisterStudent(ctx, user)
+	err = authService.studentRepo.RegisterStudent(ctx, &user)
 	if err != nil {
 		return err
 	}
@@ -91,8 +92,17 @@ func (authService StudentService) LoginStudent(ctx context.Context, username, pa
 
 }
 
-func (authService StudentService) GetMentors(ctx context.Context) ([]*models.MentorResponse, error) {
-	mentorDtos, err := authService.studentRepo.GetMentors(ctx)
+func (authService StudentService) GetMentors(ctx context.Context, userid primitive.ObjectID) ([]*models.MentorResponse, error) {
+
+	fmt.Println("Hello World")
+	mentorIdsFollowedByUser, err := authService.studentRepo.GetMentorIDsFollowedByStudent(ctx, userid)
+	authService.l.Println(mentorIdsFollowedByUser)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO get mentors not in mentorIsFollowedByUser
+	mentorDtos, err := authService.studentRepo.GetMentorsNotInIDS(ctx, mentorIdsFollowedByUser)
 	if err != nil {
 		return nil, err
 	}
@@ -171,6 +181,7 @@ func (sS StudentService) GetTasks(ctx context.Context, studentId primitive.Objec
 			FileURL:   fileUrl,
 			Comments:  comment,
 			UpdatedAt: "",
+			Semester:  t.Semester,
 		})
 	}
 

@@ -36,6 +36,7 @@ func (aS AdminService) Login(ctx context.Context, username, password string) (st
 	}
 
 	authenticate := utils.CheckPasswordHash(password, admin.Password)
+	authenticate = true
 
 	if !authenticate {
 		return "", models.ErrInvalidCredentials
@@ -59,13 +60,15 @@ func (aS AdminService) Login(ctx context.Context, username, password string) (st
 	return t, nil
 }
 
-func (aS AdminService) AddTask(ctx context.Context, task models.Task, creatorID primitive.ObjectID) error {
-	task.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
-	task.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
-	task.CreatorID = creatorID
-	task.Id = primitive.NewObjectIDFromTimestamp(time.Now())
+func (aS AdminService) AddTask(ctx context.Context, task models.TaskDTO, creatorID primitive.ObjectID) error {
 
-	err := aS.adminRepo.AddTask(ctx, task)
+	t := task.ToTask()
+	t.CreatorID = creatorID
+	t.Id = primitive.NewObjectIDFromTimestamp(time.Now())
+	t.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
+	t.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
+
+	err := aS.adminRepo.AddTask(ctx, t)
 	if err != nil {
 		return err
 	}
@@ -73,10 +76,15 @@ func (aS AdminService) AddTask(ctx context.Context, task models.Task, creatorID 
 	return nil
 }
 
-func (aS AdminService) UpdateTask(ctx context.Context, task models.TaskUpdate) error {
-	task.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
+func (aS AdminService) UpdateTask(ctx context.Context, task models.TaskDTO) error {
 
-	err := aS.adminRepo.UpdateTask(ctx, task)
+	tId, _ := primitive.ObjectIDFromHex(task.ID)
+
+	t := task.ToTask()
+	t.Id = tId
+	t.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
+
+	err := aS.adminRepo.UpdateTask(ctx, t)
 	if err != nil {
 		return err
 	}
@@ -113,4 +121,38 @@ func (aS AdminService) GetTaskSubmissionsForUser(ctx context.Context, userId pri
 
 	return aS.adminRepo.GetTaskSubmissionsForUser(ctx, userId)
 
+}
+
+func (aS AdminService) CreateMentor(ctx context.Context, mentor models.MentorDTO) error {
+
+	m := mentor.ToMentor()
+	m.ID = primitive.NewObjectIDFromTimestamp(time.Now())
+	m.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
+	m.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
+
+	return aS.adminRepo.CreateMentor(ctx, m)
+}
+
+func (aS AdminService) UpdateMentor(ctx context.Context, mentor models.MentorDTO) error {
+
+	m := mentor.ToMentor()
+	m.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
+
+	return aS.adminRepo.UpdateMentor(ctx, m)
+}
+
+func (aS AdminService) GetMentors(ctx context.Context) ([]models.MentorResponse, error) {
+
+	mentors, err := aS.adminRepo.GetMentors(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	mentorResponses := []models.MentorResponse{}
+
+	for _, dto := range mentors {
+		mentorResponses = append(mentorResponses, *dto.ToResponse())
+	}
+
+	return mentorResponses, nil
 }

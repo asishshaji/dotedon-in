@@ -11,7 +11,8 @@ type IStudentRepository interface {
 	RegisterStudent(context.Context, *models.Student) error
 	CheckStudentExistsWithStudentName(ctx context.Context, username string) bool
 	GetStudentByStudentname(ctx context.Context, username string) *models.Student
-	GetMentors(ctx context.Context) ([]*models.MentorDTO, error)
+	GetMentorIDsFollowedByStudent(ctx context.Context, userid primitive.ObjectID) ([]primitive.ObjectID, error)
+	GetMentorsNotInIDS(c context.Context, ids []primitive.ObjectID) ([]*models.Mentor, error)
 	AddMentorToStudent(ctx context.Context, userId primitive.ObjectID, mentorId primitive.ObjectID) error
 	TaskSubmission(ctx context.Context, task models.TaskSubmission) error
 	GetTasks(ctx context.Context, typeVar string) ([]models.Task, error)
