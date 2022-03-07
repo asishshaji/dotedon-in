@@ -87,6 +87,7 @@ func (uC StudentController) LoginStudent(c echo.Context) error {
 }
 
 func (uC StudentController) GetMentors(c echo.Context) error {
+
 	responseDtos, err := uC.studentService.GetMentors(c.Request().Context(), c.Get("student_id").(primitive.ObjectID))
 	if err != nil {
 		uC.l.Println(err)
@@ -115,18 +116,17 @@ func (uC StudentController) AddMentorToStudent(c echo.Context) error {
 
 func (sU StudentController) TaskSubmission(c echo.Context) error {
 
-	taskDto := models.TaskSubmissionDTO{}
+	image, _, _ := c.Request().FormFile("file")
 
-	err := json.NewDecoder(c.Request().Body).Decode(&taskDto)
+	taskId := c.FormValue("task_id")
+	comment := c.FormValue("comment")
 
-	if err != nil {
-		sU.l.Println(err)
-		return echo.ErrInternalServerError
+	taskDto := models.TaskSubmissionDTO{
+		TaskId:  taskId,
+		Comment: comment,
 	}
 
-	sU.l.Println(taskDto)
-
-	err = sU.studentService.TaskSubmission(c.Request().Context(), taskDto, c.Get("student_id").(primitive.ObjectID))
+	err := sU.studentService.TaskSubmission(c.Request().Context(), taskDto, c.Get("student_id").(primitive.ObjectID), image)
 	if err != nil {
 		return echo.ErrInternalServerError
 	}

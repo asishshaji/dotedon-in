@@ -5,9 +5,11 @@ import (
 	"log"
 
 	"github.com/asishshaji/dotedon-api/models"
+	"github.com/asishshaji/dotedon-api/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type studentRepo struct {
@@ -112,27 +114,27 @@ func (uR studentRepo) AddMentorToStudent(ctx context.Context, studentId primitiv
 	return nil
 }
 
-func checkTaskSubmissionExists(ctx context.Context, collection *mongo.Collection, userId, taskId primitive.ObjectID) bool {
-	res := collection.FindOne(ctx, bson.M{"userid": userId, "taskid": taskId})
-
-	return res.Err() != mongo.ErrNoDocuments
-}
-
 func (sR studentRepo) TaskSubmission(ctx context.Context, task models.TaskSubmission) error {
 
-	if checkTaskSubmissionExists(ctx, sR.taskSubmissionCollection, task.UserId, task.TaskId) {
-		sR.l.Println(models.ErrTaskSubmissionExists)
-		return models.ErrTaskSubmissionExists
-	}
+	opts := options.Update().SetUpsert(true)
+	up, err := utils.ToDoc(task)
 
-	res, err := sR.taskSubmissionCollection.InsertOne(ctx, task)
+	if err != nil {
+		return err
+	}
+	doc := bson.M{"$set": up}
+
+	res, err := sR.taskSubmissionCollection.UpdateOne(ctx, bson.M{
+		"userid": task.UserId,
+		"taskid": task.TaskId,
+	}, doc, opts)
 
 	if err != nil {
 		sR.l.Println(err)
 		return err
 	}
 
-	sR.l.Println("Inserted submission with ID", res.InsertedID)
+	sR.l.Println("Inserted submission with ID", res.UpsertedID)
 
 	return nil
 

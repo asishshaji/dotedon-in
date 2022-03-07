@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"mime/multipart"
 	"os"
 	"time"
 
 	"github.com/asishshaji/dotedon-api/models"
 	student_repository "github.com/asishshaji/dotedon-api/repositories/student"
+	image_service "github.com/asishshaji/dotedon-api/services/image"
 	"github.com/asishshaji/dotedon-api/utils"
 	"github.com/go-redis/redis/v8"
 	"github.com/golang-jwt/jwt"
@@ -16,16 +18,18 @@ import (
 )
 
 type StudentService struct {
-	studentRepo student_repository.IStudentRepository
-	l           *log.Logger
-	rClient     *redis.Client
+	studentRepo  student_repository.IStudentRepository
+	l            *log.Logger
+	rClient      *redis.Client
+	imageService image_service.IImageService
 }
 
-func NewStudentService(l *log.Logger, uR student_repository.IStudentRepository, rClient *redis.Client) IStudentService {
+func NewStudentService(l *log.Logger, uR student_repository.IStudentRepository, rClient *redis.Client, imgService image_service.IImageService) IStudentService {
 	return StudentService{
-		studentRepo: uR,
-		l:           l,
-		rClient:     rClient,
+		studentRepo:  uR,
+		l:            l,
+		rClient:      rClient,
+		imageService: imgService,
 	}
 }
 
@@ -124,7 +128,7 @@ func (authService StudentService) AddMentorToStudent(ctx context.Context, userId
 	return nil
 }
 
-func (sS StudentService) TaskSubmission(ctx context.Context, taskDto models.TaskSubmissionDTO, userID primitive.ObjectID) error {
+func (sS StudentService) TaskSubmission(ctx context.Context, taskDto models.TaskSubmissionDTO, userID primitive.ObjectID, file multipart.File) error {
 
 	taskObjID, err := primitive.ObjectIDFromHex(taskDto.TaskId)
 
@@ -133,11 +137,22 @@ func (sS StudentService) TaskSubmission(ctx context.Context, taskDto models.Task
 		return err
 	}
 
+	var imgUrl string = ""
+
+	if file != nil {
+		imgUrl, err = sS.imageService.UploadImage(ctx, file)
+		if err != nil {
+			return err
+		}
+	}
+
 	task := models.TaskSubmission{}
 	task.TaskId = taskObjID
 	task.UserId = userID
 	task.Comment = taskDto.Comment
-	task.FileURL = taskDto.FileURL
+	if imgUrl != "" {
+		task.FileURL = imgUrl
+	}
 	task.Status = models.ACTIVE
 	task.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
 	task.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())

@@ -8,6 +8,7 @@ import (
 
 	"github.com/asishshaji/dotedon-api/models"
 	admin_repository "github.com/asishshaji/dotedon-api/repositories/admin"
+	image_service "github.com/asishshaji/dotedon-api/services/image"
 	"github.com/asishshaji/dotedon-api/utils"
 	"github.com/go-redis/redis/v8"
 	"github.com/golang-jwt/jwt"
@@ -15,16 +16,18 @@ import (
 )
 
 type AdminService struct {
-	l         *log.Logger
-	adminRepo admin_repository.IAdminRepository
-	rClient   *redis.Client
+	l            *log.Logger
+	adminRepo    admin_repository.IAdminRepository
+	rClient      *redis.Client
+	imageService image_service.IImageService
 }
 
-func NewAdminService(l *log.Logger, adminRepo admin_repository.IAdminRepository, rClient *redis.Client) IAdminService {
+func NewAdminService(l *log.Logger, adminRepo admin_repository.IAdminRepository, rClient *redis.Client, imgService image_service.IImageService) IAdminService {
 	return AdminService{
-		l:         l,
-		adminRepo: adminRepo,
-		rClient:   rClient,
+		l:            l,
+		adminRepo:    adminRepo,
+		rClient:      rClient,
+		imageService: imgService,
 	}
 }
 
@@ -34,7 +37,7 @@ func (aS AdminService) Login(ctx context.Context, username, password string) (st
 	if err != nil {
 		return "", models.ErrNoAdminWithUsername
 	}
-
+	// TODO password
 	authenticate := utils.CheckPasswordHash(password, admin.Password)
 	authenticate = true
 

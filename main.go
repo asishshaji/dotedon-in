@@ -10,6 +10,7 @@ import (
 	admin_repository "github.com/asishshaji/dotedon-api/repositories/admin"
 	student_repository "github.com/asishshaji/dotedon-api/repositories/student"
 	admin_service "github.com/asishshaji/dotedon-api/services/admin"
+	image_service "github.com/asishshaji/dotedon-api/services/image"
 	student_service "github.com/asishshaji/dotedon-api/services/student"
 	"github.com/asishshaji/dotedon-api/utils"
 	"github.com/go-redis/redis/v8"
@@ -39,12 +40,14 @@ func main() {
 		logger.Println("Connected to redis")
 	}
 
+	imageService := image_service.NewImageService(logger)
+
 	studentRepo := student_repository.NewStudentAuthRepo(logger, db)
-	studentService := student_service.NewStudentService(logger, studentRepo, redisClient)
+	studentService := student_service.NewStudentService(logger, studentRepo, redisClient, imageService)
 	studentController := student_controller.NewStudentController(logger, studentService)
 
 	adminRepo := admin_repository.NewAdminRepository(logger, db)
-	adminService := admin_service.NewAdminService(logger, adminRepo, redisClient)
+	adminService := admin_service.NewAdminService(logger, adminRepo, redisClient, imageService)
 	adminController := admin_controller.NewAdminController(logger, adminService)
 
 	controller := Controllers{
