@@ -7,8 +7,7 @@ import (
 	"os/signal"
 	"time"
 
-	admin_controller "github.com/asishshaji/dotedon-api/controller/admin"
-	student_controller "github.com/asishshaji/dotedon-api/controller/student"
+	student_controller "github.com/asishshaji/dotedon-api/controller"
 	"github.com/asishshaji/dotedon-api/models"
 	"github.com/asishshaji/dotedon-api/utils"
 	"github.com/labstack/echo/v4"
@@ -22,7 +21,6 @@ type App struct {
 
 type Controllers struct {
 	StudentController student_controller.IStudentController
-	AdminController   admin_controller.IAdminController
 }
 
 func NewApp(port string, controller Controllers) *App {
@@ -32,9 +30,8 @@ func NewApp(port string, controller Controllers) *App {
 	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(20)))
 	e.Use(middleware.Secure())
 
-	uG := e.Group("/student")
-	uG.POST("", controller.StudentController.RegisterStudent)
-	uG.POST("/login", controller.StudentController.LoginStudent)
+	e.POST("", controller.StudentController.RegisterStudent)
+	e.POST("/login", controller.StudentController.LoginStudent)
 
 	studentJwtConfig := middleware.JWTConfig{
 		Claims:     &models.StudentJWTClaims{},
@@ -47,32 +44,10 @@ func NewApp(port string, controller Controllers) *App {
 	r.Use(utils.StudentAuthenticationMiddleware)
 
 	r.GET("/mentors", controller.StudentController.GetMentors)
-	r.POST("/mentors", controller.StudentController.AddMentorToStudent)
-	r.POST("/task/submit", controller.StudentController.TaskSubmission)
+	r.POST("/mentors", controller.StudentController.FollowMentor)
+	r.POST("/task/submit", controller.StudentController.CreateTaskSubmisson)
+	r.PUT("/task/submit", controller.StudentController.UpdateTaskSubmission)
 	r.GET("/task", controller.StudentController.GetTasks)
-
-	adminGroup := e.Group("/admin")
-	adminGroup.POST("/login", controller.AdminController.Login)
-
-	adminGroup.Use(middleware.JWTWithConfig(middleware.JWTConfig{
-		Claims:     &models.AdminJWTClaims{},
-		SigningKey: []byte(os.Getenv("JWT_SECRET")),
-	}))
-
-	adminGroup.Use(utils.AdminAuthenticationMiddleware)
-
-	adminGroup.POST("/task", controller.AdminController.AddTask)
-	adminGroup.PUT("/task", controller.AdminController.UpdateTask)
-	adminGroup.GET("/task", controller.AdminController.GetTasks)
-	adminGroup.DELETE("/task", controller.AdminController.DeleteTask)
-	adminGroup.GET("/users", controller.AdminController.GetUsers)
-	adminGroup.GET("/submission", controller.AdminController.GetTaskSubmissions)
-	adminGroup.PUT("/submission", controller.AdminController.EditTaskSubmissionStatus)
-	adminGroup.GET("/user/submission/:id", controller.AdminController.GetTaskSubmissionForUser)
-
-	adminGroup.GET("/mentor", controller.AdminController.GetMentors)
-	adminGroup.POST("/mentor", controller.AdminController.CreateMentor)
-	adminGroup.PUT("/mentor", controller.AdminController.UpdateMentor)
 
 	return &App{
 		app:  e,

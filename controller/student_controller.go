@@ -98,7 +98,7 @@ func (uC StudentController) GetMentors(c echo.Context) error {
 	return c.JSON(http.StatusOK, responseDtos)
 }
 
-func (uC StudentController) AddMentorToStudent(c echo.Context) error {
+func (uC StudentController) FollowMentor(c echo.Context) error {
 	// change updated time of user
 
 	mentorId := c.FormValue("mentor_id")
@@ -114,7 +114,7 @@ func (uC StudentController) AddMentorToStudent(c echo.Context) error {
 	return nil
 }
 
-func (sU StudentController) TaskSubmission(c echo.Context) error {
+func (sU StudentController) CreateTaskSubmisson(c echo.Context) error {
 
 	image, _, _ := c.Request().FormFile("file")
 
@@ -126,7 +126,29 @@ func (sU StudentController) TaskSubmission(c echo.Context) error {
 		Comment: comment,
 	}
 
-	err := sU.studentService.TaskSubmission(c.Request().Context(), taskDto, c.Get("student_id").(primitive.ObjectID), image)
+	err := sU.studentService.CreateTaskSubmission(c.Request().Context(), taskDto, c.Get("student_id").(primitive.ObjectID), image)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusConflict, err.Error())
+	}
+
+	return c.JSON(http.StatusCreated, models.Response{
+		Message: "Created submission",
+	})
+}
+
+func (sU StudentController) UpdateTaskSubmission(c echo.Context) error {
+
+	image, _, _ := c.Request().FormFile("file")
+
+	taskId := c.FormValue("task_id")
+	comment := c.FormValue("comment")
+
+	taskDto := models.TaskSubmissionDTO{
+		TaskId:  taskId,
+		Comment: comment,
+	}
+
+	err := sU.studentService.UpdateTaskSubmission(c.Request().Context(), taskDto, c.Get("student_id").(primitive.ObjectID), image)
 	if err != nil {
 		return echo.ErrInternalServerError
 	}

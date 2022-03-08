@@ -114,7 +114,7 @@ func (uR studentRepo) AddMentorToStudent(ctx context.Context, studentId primitiv
 	return nil
 }
 
-func (sR studentRepo) TaskSubmission(ctx context.Context, task models.TaskSubmission) error {
+func (sR studentRepo) UpdateTaskSubmission(ctx context.Context, task models.TaskSubmission) error {
 
 	opts := options.Update().SetUpsert(true)
 	up, err := utils.ToDoc(task)
@@ -140,6 +140,33 @@ func (sR studentRepo) TaskSubmission(ctx context.Context, task models.TaskSubmis
 
 }
 
+func checkIfTaskSubmissionExists(ctx context.Context, collection *mongo.Collection, taskId, userId primitive.ObjectID) bool {
+	res := collection.FindOne(ctx, bson.M{
+		"taskid": taskId,
+		"userid": userId,
+	})
+
+	return res.Err() != mongo.ErrNoDocuments
+
+}
+
+func (sR studentRepo) CreateTaskSubmission(ctx context.Context, task models.TaskSubmission) error {
+
+	if checkIfTaskSubmissionExists(ctx, sR.taskSubmissionCollection, task.TaskId, task.UserId) {
+		sR.l.Println(models.ErrTaskSubmissionExists)
+		return models.ErrTaskSubmissionExists
+	}
+
+	res, err := sR.taskSubmissionCollection.InsertOne(ctx, task)
+	if err != nil {
+		sR.l.Println(err)
+		return err
+	}
+	sR.l.Println("Inserted task submission with id", res.InsertedID)
+
+	return nil
+
+}
 func (sR studentRepo) GetTasks(ctx context.Context, typeVar string) ([]models.Task, error) {
 	tasks := []models.Task{}
 

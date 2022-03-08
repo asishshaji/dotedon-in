@@ -85,19 +85,6 @@ func ToDoc(v interface{}) (doc *bson.D, err error) {
 	return
 }
 
-func AdminAuthenticationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		admin := c.Get("user").(*jwt.Token)
-		claims := admin.Claims.(*models.AdminJWTClaims)
-		if !claims.IsAdmin {
-			return echo.ErrForbidden
-		}
-
-		c.Set("admin_id", claims.AdminId)
-		return next(c)
-	}
-}
-
 func StudentAuthenticationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		user := c.Get("user").(*jwt.Token)

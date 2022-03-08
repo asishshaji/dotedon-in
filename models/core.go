@@ -138,6 +138,7 @@ type TaskSubmission struct {
 	TaskId    primitive.ObjectID `json:"taskid"`
 	Comment   string             `json:"comment"`
 	FileURL   string             `json:"fileurl" bson:",omitempty"`
+	Feedback  string
 	Status    Status             `json:"status"`
 	CreatedAt primitive.DateTime `bson:",omitempty"`
 	UpdatedAt primitive.DateTime `bson:",omitempty"`

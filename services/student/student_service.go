@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/asishshaji/dotedon-api/models"
-	student_repository "github.com/asishshaji/dotedon-api/repositories/student"
+	student_repository "github.com/asishshaji/dotedon-api/repositories"
 	image_service "github.com/asishshaji/dotedon-api/services/image"
 	"github.com/asishshaji/dotedon-api/utils"
 	"github.com/go-redis/redis/v8"
@@ -128,7 +128,7 @@ func (authService StudentService) AddMentorToStudent(ctx context.Context, userId
 	return nil
 }
 
-func (sS StudentService) TaskSubmission(ctx context.Context, taskDto models.TaskSubmissionDTO, userID primitive.ObjectID, file multipart.File) error {
+func (sS StudentService) UpdateTaskSubmission(ctx context.Context, taskDto models.TaskSubmissionDTO, userID primitive.ObjectID, file multipart.File) error {
 
 	taskObjID, err := primitive.ObjectIDFromHex(taskDto.TaskId)
 
@@ -150,19 +150,45 @@ func (sS StudentService) TaskSubmission(ctx context.Context, taskDto models.Task
 	task.TaskId = taskObjID
 	task.UserId = userID
 	task.Comment = taskDto.Comment
-	if imgUrl != "" {
-		task.FileURL = imgUrl
-	}
+	task.FileURL = imgUrl
 	task.Status = models.ACTIVE
-	task.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
 	task.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
 
-	err = sS.studentRepo.TaskSubmission(ctx, task)
+	err = sS.studentRepo.UpdateTaskSubmission(ctx, task)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (sS StudentService) CreateTaskSubmission(ctx context.Context, taskDto models.TaskSubmissionDTO, userID primitive.ObjectID, file multipart.File) error {
+	taskObjID, err := primitive.ObjectIDFromHex(taskDto.TaskId)
+
+	if err != nil {
+		sS.l.Println(err)
+		return err
+	}
+
+	var imgUrl string
+
+	if file != nil {
+		imgUrl, err = sS.imageService.UploadImage(ctx, file)
+		if err != nil {
+			return err
+		}
+	}
+
+	task := models.TaskSubmission{}
+	task.TaskId = taskObjID
+	task.FileURL = imgUrl
+	task.UserId = userID
+	task.Comment = taskDto.Comment
+	task.Status = models.ACTIVE
+	task.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
+	task.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
+
+	return sS.studentRepo.CreateTaskSubmission(ctx, task)
 }
 
 func (sS StudentService) GetTasks(ctx context.Context, studentId primitive.ObjectID) ([]models.TaskStudentResponse, error) {
