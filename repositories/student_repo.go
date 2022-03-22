@@ -17,6 +17,10 @@ type studentRepo struct {
 	mentorCollection         *mongo.Collection
 	taskSubmissionCollection *mongo.Collection
 	taskCollection           *mongo.Collection
+	domainCollection         *mongo.Collection
+	collegeCollection        *mongo.Collection
+	coursesCollection        *mongo.Collection
+	tokenCollection          *mongo.Collection
 	l                        *log.Logger
 }
 
@@ -25,7 +29,11 @@ func NewStudentAuthRepo(l *log.Logger, db *mongo.Database) IStudentRepository {
 		studentCollection:        db.Collection("students"),
 		mentorCollection:         db.Collection("mentor"),
 		taskSubmissionCollection: db.Collection("task_submission"),
+		domainCollection:         db.Collection("domains"),
 		taskCollection:           db.Collection("tasks"),
+		coursesCollection:        db.Collection("courses"),
+		collegeCollection:        db.Collection("colleges"),
+		tokenCollection:          db.Collection("tokens"),
 		l:                        l,
 	}
 }
@@ -43,19 +51,19 @@ func (uR studentRepo) RegisterStudent(ctx context.Context, uM *models.Student) e
 	return nil
 }
 
-func (uR studentRepo) CheckStudentExistsWithStudentName(ctx context.Context, studentname string) bool {
+func (uR studentRepo) CheckStudentExistsWithEmail(ctx context.Context, email string) bool {
 	res := uR.studentCollection.FindOne(ctx, bson.M{
-		"username": studentname,
+		"email": email,
 	}).Err()
 	return res != mongo.ErrNoDocuments
 }
 
-func (uR studentRepo) GetStudentByStudentname(ctx context.Context, studentname string) *models.Student {
+func (uR studentRepo) GetStudentByEmail(ctx context.Context, email string) *models.Student {
 	student := new(models.Student)
-	res := uR.studentCollection.FindOne(ctx, bson.M{"username": studentname})
+	res := uR.studentCollection.FindOne(ctx, bson.M{"email": email})
 
 	if res.Err() == mongo.ErrNoDocuments {
-		uR.l.Println("Invalid studentname and Password")
+		uR.l.Println("Invalid studentname and password")
 		return nil
 	}
 
@@ -140,6 +148,30 @@ func (sR studentRepo) UpdateTaskSubmission(ctx context.Context, task models.Task
 
 }
 
+func (sR studentRepo) UpdateStudent(ctx context.Context, student models.Student) error {
+	opts := options.Update().SetUpsert(true)
+	up, err := utils.ToDoc(student)
+
+	if err != nil {
+		return err
+	}
+	doc := bson.M{"$set": up}
+
+	res, err := sR.studentCollection.UpdateOne(ctx, bson.M{
+		"email": student.Email,
+	}, doc, opts)
+
+	if err != nil {
+		sR.l.Println(err)
+		return err
+	}
+
+	sR.l.Println("Updated student with ID", res.UpsertedID)
+
+	return nil
+
+}
+
 func checkIfTaskSubmissionExists(ctx context.Context, collection *mongo.Collection, taskId, userId primitive.ObjectID) bool {
 	res := collection.FindOne(ctx, bson.M{
 		"taskid": taskId,
@@ -190,7 +222,6 @@ func (sR studentRepo) GetTasks(ctx context.Context, typeVar string) ([]models.Ta
 
 func (sR studentRepo) GetTaskSubmissions(ctx context.Context, userId primitive.ObjectID) ([]models.TaskSubmission, error) {
 	submissions := []models.TaskSubmission{}
-	sR.l.Println(userId)
 	cursor, err := sR.taskSubmissionCollection.Find(ctx, bson.M{
 		"userid": userId,
 	})
@@ -213,6 +244,7 @@ func (sR studentRepo) GetStudentByID(ctx context.Context, studentID primitive.Ob
 	res := sR.studentCollection.FindOne(ctx, bson.M{
 		"_id": studentID,
 	})
+
 	if res.Err() == mongo.ErrNoDocuments {
 		sR.l.Println(res.Err())
 		return nil, models.ErrNoStudentWithIdExists
@@ -257,5 +289,67 @@ func (sR studentRepo) GetMentorIDsFollowedByStudent(ctx context.Context, userid 
 		return nil, err
 	}
 
-	return mentors[0].Mentors, nil
+	men := mentors[0].Mentors
+	if men != nil {
+		return men, nil
+	}
+
+	return []primitive.ObjectID{}, nil
+}
+
+func (sR studentRepo) GetDomains(ctx context.Context) ([]models.StaticModel, error) {
+	domains := []models.StaticModel{}
+
+	cursor, err := sR.domainCollection.Find(ctx, bson.M{})
+	if err != nil {
+		return domains, err
+	}
+	if err = cursor.All(ctx, &domains); err != nil {
+		return domains, err
+	}
+
+	return domains, nil
+}
+
+func (sR studentRepo) GetColleges(ctx context.Context) ([]models.StaticModel, error) {
+	c := []models.StaticModel{}
+
+	cursor, err := sR.collegeCollection.Find(ctx, bson.M{})
+	if err != nil {
+		return c, err
+	}
+	if err = cursor.All(ctx, &c); err != nil {
+		return c, err
+	}
+
+	return c, nil
+}
+
+func (sR studentRepo) GetCourses(ctx context.Context) ([]models.StaticModel, error) {
+	c := []models.StaticModel{}
+
+	cursor, err := sR.coursesCollection.Find(ctx, bson.M{})
+	if err != nil {
+		return c, err
+	}
+	if err = cursor.All(ctx, &c); err != nil {
+		return c, err
+	}
+
+	return c, nil
+}
+
+func (sR studentRepo) InsertToken(ctx context.Context, tK models.Token) error {
+	opts := options.Update().SetUpsert(true)
+
+	_, err := sR.tokenCollection.UpdateOne(ctx, bson.M{
+		"user_id": tK.UserId,
+	}, bson.M{
+		"$set": tK,
+	}, opts)
+
+	if err != nil {
+		return err
+	}
+	return nil
 }

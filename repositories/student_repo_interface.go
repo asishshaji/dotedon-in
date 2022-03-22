@@ -9,8 +9,9 @@ import (
 
 type IStudentRepository interface {
 	RegisterStudent(context.Context, *models.Student) error
-	CheckStudentExistsWithStudentName(ctx context.Context, username string) bool
-	GetStudentByStudentname(ctx context.Context, username string) *models.Student
+	CheckStudentExistsWithEmail(ctx context.Context, email string) bool
+	GetStudentByEmail(ctx context.Context, email string) *models.Student
+	UpdateStudent(ctx context.Context, student models.Student) error
 
 	GetMentorIDsFollowedByStudent(ctx context.Context, userid primitive.ObjectID) ([]primitive.ObjectID, error)
 	GetMentorsNotInIDS(c context.Context, ids []primitive.ObjectID) ([]*models.Mentor, error)
@@ -22,4 +23,10 @@ type IStudentRepository interface {
 	CreateTaskSubmission(ctx context.Context, task models.TaskSubmission) error
 
 	GetStudentByID(ctx context.Context, studentID primitive.ObjectID) (*models.Student, error)
+
+	GetDomains(ctx context.Context) ([]models.StaticModel, error)
+	GetColleges(ctx context.Context) ([]models.StaticModel, error)
+	GetCourses(ctx context.Context) ([]models.StaticModel, error)
+
+	InsertToken(ctx context.Context, tK models.Token) error
 }

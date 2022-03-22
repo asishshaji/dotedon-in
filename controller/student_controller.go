@@ -26,6 +26,8 @@ func NewStudentController(l *log.Logger, uS student_service.IStudentService) ISt
 
 func (uC StudentController) RegisterStudent(c echo.Context) error {
 
+	fmt.Println("Hello")
+
 	user := models.StudentDTO{}
 
 	if err := json.NewDecoder(c.Request().Body).Decode(&user); err != nil {
@@ -64,14 +66,18 @@ func (uC StudentController) LoginStudent(c echo.Context) error {
 		return echo.ErrInternalServerError
 	}
 
-	username := fmt.Sprintf("%v", json_map["username"])
+	if json_map["email"] == nil || json_map["password"] == nil {
+		return echo.ErrBadRequest
+	}
+
+	username := fmt.Sprintf("%v", json_map["email"])
 	password := fmt.Sprintf("%v", json_map["password"])
 
 	if len(username) == 0 || len(password) == 0 {
 		return echo.ErrBadRequest
 	}
 
-	token, err := uC.studentService.LoginStudent(c.Request().Context(), username, password)
+	res, err := uC.studentService.LoginStudent(c.Request().Context(), username, password)
 
 	if err != nil {
 		uC.l.Println(err)
@@ -80,12 +86,32 @@ func (uC StudentController) LoginStudent(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, models.Response{
-		Message: token,
-	})
+	return c.JSON(http.StatusOK, res)
 
 }
 
+func (sC StudentController) UpdateStudent(c echo.Context) error {
+	sDto := models.StudentDTO{}
+	if err := json.NewDecoder(c.Request().Body).Decode(&sDto); err != nil {
+		sC.l.Println("Error parsing user details")
+		return echo.ErrInternalServerError
+	}
+	err := sC.studentService.UpdateStudent(c.Request().Context(), sDto)
+	if err != nil {
+		sC.l.Println(err)
+		return echo.ErrInternalServerError
+	}
+	return nil
+}
+
+func (uC StudentController) GetUser(c echo.Context) error {
+	res, err := uC.studentService.GetStudent(c.Request().Context(), c.Get("student_id").(primitive.ObjectID))
+	if err != nil {
+		uC.l.Println(err.Error())
+		return c.JSON(http.StatusNoContent, nil)
+	}
+	return c.JSON(http.StatusOK, res)
+}
 func (uC StudentController) GetMentors(c echo.Context) error {
 
 	responseDtos, err := uC.studentService.GetMentors(c.Request().Context(), c.Get("student_id").(primitive.ObjectID))
@@ -116,17 +142,13 @@ func (uC StudentController) FollowMentor(c echo.Context) error {
 
 func (sU StudentController) CreateTaskSubmisson(c echo.Context) error {
 
-	image, _, _ := c.Request().FormFile("file")
-
-	taskId := c.FormValue("task_id")
-	comment := c.FormValue("comment")
-
-	taskDto := models.TaskSubmissionDTO{
-		TaskId:  taskId,
-		Comment: comment,
+	tSDto := models.TaskSubmissionDTO{}
+	if err := json.NewDecoder(c.Request().Body).Decode(&tSDto); err != nil {
+		sU.l.Println("Error parsing submission details")
+		return echo.ErrInternalServerError
 	}
 
-	err := sU.studentService.CreateTaskSubmission(c.Request().Context(), taskDto, c.Get("student_id").(primitive.ObjectID), image)
+	err := sU.studentService.CreateTaskSubmission(c.Request().Context(), tSDto, c.Get("student_id").(primitive.ObjectID))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusConflict, err.Error())
 	}
@@ -138,17 +160,14 @@ func (sU StudentController) CreateTaskSubmisson(c echo.Context) error {
 
 func (sU StudentController) UpdateTaskSubmission(c echo.Context) error {
 
-	image, _, _ := c.Request().FormFile("file")
-
-	taskId := c.FormValue("task_id")
-	comment := c.FormValue("comment")
-
-	taskDto := models.TaskSubmissionDTO{
-		TaskId:  taskId,
-		Comment: comment,
+	tSDto := models.TaskSubmissionDTO{}
+	if err := json.NewDecoder(c.Request().Body).Decode(&tSDto); err != nil {
+		sU.l.Println("Error parsing submission details")
+		return echo.ErrInternalServerError
 	}
 
-	err := sU.studentService.UpdateTaskSubmission(c.Request().Context(), taskDto, c.Get("student_id").(primitive.ObjectID), image)
+	err := sU.studentService.UpdateTaskSubmission(c.Request().Context(), tSDto, c.Get("student_id").(primitive.ObjectID))
+
 	if err != nil {
 		return echo.ErrInternalServerError
 	}
@@ -167,4 +186,47 @@ func (sC StudentController) GetTasks(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, taskStudentResponseArr)
 
+}
+
+func (sC StudentController) GetData(c echo.Context) error {
+
+	domains, err := sC.studentService.GetData(c.Request().Context())
+	if err != nil {
+		sC.l.Println(err)
+		return echo.ErrInternalServerError
+	}
+
+	return c.JSON(http.StatusOK, domains)
+}
+
+func (sC StudentController) UploadFile(c echo.Context) error {
+	image, _, _ := c.Request().FormFile("file")
+
+	url, err := sC.studentService.UploadFile(c.Request().Context(), image)
+	if err != nil {
+		sC.l.Println(err)
+		return echo.ErrInternalServerError
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"url": url,
+	})
+
+}
+
+func (sC StudentController) InsertToken(c echo.Context) error {
+	tK := models.TokenDto{}
+
+	if err := json.NewDecoder(c.Request().Body).Decode(&tK); err != nil {
+		return echo.ErrBadRequest
+	}
+
+	err := sC.studentService.InsertToken(c.Request().Context(), tK, c.Get("student_id").(primitive.ObjectID))
+
+	if err != nil {
+		sC.l.Println(err)
+		return echo.ErrInternalServerError
+	}
+
+	return c.JSON(http.StatusCreated, nil)
 }

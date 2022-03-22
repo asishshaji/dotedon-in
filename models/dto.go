@@ -62,7 +62,7 @@ func (task *TaskDTO) Validate() error {
 }
 
 type StudentDTO struct {
-	Username         string       `json:"username" validate:"required"`
+	Email            string       `json:"email" validate:"required"`
 	FirstName        string       `json:"first_name" validate:"required"`
 	PreferedType     PreferedType `json:"type"`
 	LastName         string       `json:"last_name" validate:"required"`
@@ -75,7 +75,7 @@ type StudentDTO struct {
 	College          string       `json:"college" validate:"required"`
 	Course           string       `json:"course" validate:"required"`
 	Specialization   string       `json:"specialization" validate:"required"`
-	HasArrears       bool         `json:"has_arrears" validate:"required"`
+	HasArrears       bool         `json:"has_arrears"`
 	Place            string       `json:"place" validate:"required"`
 	Semester         string       `json:"semester" validate:"required"`
 	District         string       `json:"district" validate:"required"`
@@ -93,7 +93,7 @@ func (Student *StudentDTO) Validate() error {
 
 func (stu StudentDTO) ToStudent() Student {
 	return Student{
-		Username:         stu.Username,
+		Email:            stu.Email,
 		FirstName:        stu.FirstName,
 		PreferedType:     stu.PreferedType,
 		LastName:         stu.LastName,
@@ -115,4 +115,8 @@ func (stu StudentDTO) ToStudent() Student {
 		DateOfJoining:    stu.DateOfJoining,
 		CourseEndingDate: stu.CourseEndingDate,
 	}
+}
+
+type TokenDto struct {
+	Token string
 }

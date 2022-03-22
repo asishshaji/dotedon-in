@@ -21,6 +21,8 @@ type EnvironmentConfig struct {
 	ServerPort string
 	DBURL      string
 	DBName     string
+	DBUsername string
+	DBPassword string
 	l          *log.Logger
 }
 
@@ -33,6 +35,8 @@ func LoadEnv(l *log.Logger) *EnvironmentConfig {
 		ServerPort: os.Getenv("SERVER_PORT"),
 		DBURL:      os.Getenv("DB_URL"),
 		DBName:     os.Getenv("DB_NAME"),
+		DBUsername: os.Getenv("DB_USERNAME"),
+		DBPassword: os.Getenv("DB_PASSWORD"),
 		l:          l,
 	}
 }
@@ -41,6 +45,13 @@ func (env *EnvironmentConfig) ConnectToDB() *mongo.Database {
 	env.l.Println("Starting connection to db")
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(env.DBURL))
+
+	// SetAuth(options.Credential{
+	// 	Username:      env.DBUsername,
+	// 	Password:      env.DBPassword,
+	// 	AuthMechanism: "SCRAM-SHA-256",
+	// 	AuthSource:    "auth",
+	// }))
 
 	if err != nil {
 		env.l.Fatalln(err)
@@ -65,12 +76,12 @@ func (env *EnvironmentConfig) ConnectToDB() *mongo.Database {
 
 }
 
-func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+func Hashpassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 1)
 	return string(bytes), err
 }
 
-func CheckPasswordHash(password, hash string) bool {
+func CheckpasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }
@@ -90,7 +101,6 @@ func StudentAuthenticationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		user := c.Get("user").(*jwt.Token)
 		claims := user.Claims.(*models.StudentJWTClaims)
 		c.Set("student_id", claims.StudentId)
-
 		return next(c)
 	}
 }

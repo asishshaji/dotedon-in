@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
 	student_controller "github.com/asishshaji/dotedon-api/controller"
@@ -25,13 +26,13 @@ type Controllers struct {
 
 func NewApp(port string, controller Controllers) *App {
 	e := echo.New()
-
 	e.Use(middleware.Logger())
 	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(20)))
 	e.Use(middleware.Secure())
 
-	e.POST("", controller.StudentController.RegisterStudent)
+	e.POST("/register", controller.StudentController.RegisterStudent)
 	e.POST("/login", controller.StudentController.LoginStudent)
+	e.GET("/data", controller.StudentController.GetData)
 
 	studentJwtConfig := middleware.JWTConfig{
 		Claims:     &models.StudentJWTClaims{},
@@ -43,11 +44,16 @@ func NewApp(port string, controller Controllers) *App {
 	r.Use(middleware.JWTWithConfig(studentJwtConfig))
 	r.Use(utils.StudentAuthenticationMiddleware)
 
+	r.GET("/user", controller.StudentController.GetUser)
+	r.PUT("/user", controller.StudentController.UpdateStudent)
 	r.GET("/mentors", controller.StudentController.GetMentors)
 	r.POST("/mentors", controller.StudentController.FollowMentor)
 	r.POST("/task/submit", controller.StudentController.CreateTaskSubmisson)
 	r.PUT("/task/submit", controller.StudentController.UpdateTaskSubmission)
 	r.GET("/task", controller.StudentController.GetTasks)
+
+	r.POST("/file", controller.StudentController.UploadFile)
+	r.POST("/token", controller.StudentController.InsertToken)
 
 	return &App{
 		app:  e,
@@ -63,7 +69,7 @@ func (a *App) RunServer() {
 
 	sigChan := make(chan os.Signal, 2)
 	signal.Notify(sigChan, os.Interrupt)
-	signal.Notify(sigChan, os.Kill)
+	signal.Notify(sigChan, syscall.SIGTERM)
 
 	sigData := <-sigChan
 

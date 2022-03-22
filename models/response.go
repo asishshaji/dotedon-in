@@ -4,7 +4,7 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type StudentResponse struct {
 	ID               primitive.ObjectID `json:"id"`
-	Username         string             `json:"username"`
+	Email            string             `json:"email"`
 	FirstName        string             `json:"first_name"`
 	PreferedType     PreferedType       `json:"type"`
 	LastName         string             `json:"last_name"`
@@ -62,4 +62,15 @@ type TaskSubmissionsAdminResponse struct {
 	Task    Task               `json:"task"`
 	Student StudentTaskRespone `json:"student"`
 	// UpdatedAt primitive.DateTime `json:"updated_at"`
+}
+
+type StudentLoginResponse struct {
+	Student StudentResponse `json:"student"`
+	Jwt     string          `json:"jwt"`
+}
+
+type Data struct {
+	Domains  []string `json:"domains"`
+	Colleges []string `json:"colleges"`
+	Courses  []string `json:"courses"`
 }

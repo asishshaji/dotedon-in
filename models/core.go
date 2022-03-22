@@ -24,35 +24,63 @@ type Response struct {
 type Admin struct {
 	ID       primitive.ObjectID `bson:"_id"`
 	Username string             `json:"username"`
-	Password string             `json:"-"`
+	password string             `json:"-"`
 }
 
 type Student struct {
-	ID               primitive.ObjectID   `bson:"_id" json:"_id"`
-	Username         string               `json:"username" validate:"required"`
-	FirstName        string               `json:"first_name" validate:"required"`
-	PreferedType     PreferedType         `json:"type"`
-	LastName         string               `json:"last_name" validate:"required"`
-	MiddleName       string               `json:"middle_name"`
-	CreatedAt        primitive.DateTime   `json:"-"`
-	UpdatedAt        primitive.DateTime   `json:"-"`
-	Password         string               `json:"password" validate:"required,min=4"`
-	DOB              string               `json:"dob" validate:"required"`
-	Gender           Gender               `json:"gender" validate:"required"`
-	PhoneNumber      string               `json:"phone_number" validate:"required"`
-	PhoneNumberAlt   string               `json:"phone_number_alt"`
-	College          string               `json:"college" validate:"required"`
-	Course           string               `json:"course" validate:"required"`
-	Specialization   string               `json:"specialization" validate:"required"`
-	HasArrears       bool                 `json:"has_arrears" validate:"required"`
-	Place            string               `json:"place" validate:"required"`
-	Semester         string               `json:"semester" validate:"required"`
-	District         string               `json:"district" validate:"required"`
-	State            string               `json:"state" validate:"required"`
-	Country          string               `json:"country" validate:"required"`
-	DateOfJoining    string               `json:"date_of_joining"`
-	CourseEndingDate string               `json:"course_ending_date"`
-	Mentors          []primitive.ObjectID `json:"-"`
+	ID               primitive.ObjectID   `bson:"_id,omitempty" json:"_id"`
+	Email            string               `json:"email" validate:"required" bson:",omitempty"`
+	FirstName        string               `json:"first_name" validate:"required" bson:",omitempty"`
+	PreferedType     PreferedType         `json:"type" bson:",omitempty"`
+	LastName         string               `json:"last_name" validate:"required" bson:",omitempty"`
+	MiddleName       string               `json:"middle_name" bson:",omitempty"`
+	CreatedAt        primitive.DateTime   `json:"-" bson:",omitempty"`
+	UpdatedAt        primitive.DateTime   `json:"-" bson:",omitempty"`
+	Password         string               `json:"password" validate:"required,min=4" bson:",omitempty"`
+	DOB              string               `json:"dob" validate:"required" bson:",omitempty"`
+	Gender           Gender               `json:"gender" validate:"required" bson:",omitempty"`
+	PhoneNumber      string               `json:"phone_number" validate:"required" bson:",omitempty"`
+	PhoneNumberAlt   string               `json:"phone_number_alt bson:",omitempty""`
+	College          string               `json:"college" validate:"required" bson:",omitempty"`
+	Course           string               `json:"course" validate:"required" bson:",omitempty"`
+	Specialization   string               `json:"specialization" validate:"required" bson:",omitempty"`
+	HasArrears       bool                 `json:"has_arrears" validate:"required" bson:",omitempty"`
+	Place            string               `json:"place" validate:"required" bson:",omitempty"`
+	Semester         string               `json:"semester" validate:"required" bson:",omitempty"`
+	District         string               `json:"district" validate:"required" bson:",omitempty"`
+	State            string               `json:"state" validate:"required" bson:",omitempty"`
+	Country          string               `json:"country" validate:"required" bson:",omitempty"`
+	DateOfJoining    string               `json:"date_of_joining" bson:",omitempty"`
+	CourseEndingDate string               `json:"course_ending_date" bson:",omitempty"`
+	Mentors          []primitive.ObjectID `json:"-" bson:",omitempty"`
+}
+
+func (stu Student) ToStudentResponse() StudentResponse {
+	return StudentResponse{
+		ID:               stu.ID,
+		Email:            stu.Email,
+		FirstName:        stu.FirstName,
+		PreferedType:     stu.PreferedType,
+		LastName:         stu.LastName,
+		MiddleName:       stu.MiddleName,
+		CreatedAt:        stu.CreatedAt,
+		UpdatedAt:        stu.UpdatedAt,
+		DOB:              stu.DOB,
+		Gender:           Gender(stu.Gender).String(),
+		PhoneNumber:      stu.PhoneNumber,
+		PhoneNumberAlt:   stu.PhoneNumberAlt,
+		College:          stu.College,
+		Course:           stu.Course,
+		Specialization:   stu.Specialization,
+		HasArrears:       stu.HasArrears,
+		Place:            stu.Place,
+		Semester:         stu.Semester,
+		District:         stu.District,
+		State:            stu.State,
+		Country:          stu.Country,
+		DateOfJoining:    stu.DateOfJoining,
+		CourseEndingDate: stu.CourseEndingDate,
+	}
 }
 
 type Students []Student
@@ -63,7 +91,7 @@ func (students Students) ToStudentResponse() []StudentResponse {
 	for _, stu := range students {
 		studentReponse = append(studentReponse, StudentResponse{
 			ID:               stu.ID,
-			Username:         stu.Username,
+			Email:            stu.Email,
 			FirstName:        stu.FirstName,
 			PreferedType:     stu.PreferedType,
 			LastName:         stu.LastName,
@@ -151,4 +179,14 @@ type Type struct {
 
 type TT struct {
 	Mentors []primitive.ObjectID
+}
+
+type StaticModel struct {
+	Name      string
+	CreatedOn primitive.DateTime `bson:"created_at"`
+}
+
+type Token struct {
+	UserId primitive.ObjectID `bson:"user_id"`
+	Token  string             `bson:"token"`
 }
