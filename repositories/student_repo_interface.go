@@ -29,4 +29,6 @@ type IStudentRepository interface {
 	GetCourses(ctx context.Context) ([]models.StaticModel, error)
 
 	InsertToken(ctx context.Context, tK models.Token) error
+
+	GetNotifications(ctx context.Context, uid primitive.ObjectID) ([]models.NotificationEntity, error)
 }

@@ -25,4 +25,6 @@ type IStudentService interface {
 	UploadFile(ctx context.Context, file multipart.File) (string, error)
 
 	InsertToken(ctx context.Context, tK models.TokenDto, uId primitive.ObjectID) error
+
+	GetNotifications(ctx context.Context, uid primitive.ObjectID) ([]models.NotificationResponse, error)
 }

@@ -230,3 +230,12 @@ func (sC StudentController) InsertToken(c echo.Context) error {
 
 	return c.JSON(http.StatusCreated, nil)
 }
+
+func (sC StudentController) GetNotifications(c echo.Context) error {
+	notifications, err := sC.studentService.GetNotifications(c.Request().Context(), c.Get("student_id").(primitive.ObjectID))
+	if err != nil {
+		return echo.ErrInternalServerError
+	}
+
+	return c.JSON(http.StatusOK, notifications)
+}

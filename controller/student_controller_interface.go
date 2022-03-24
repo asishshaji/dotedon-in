@@ -18,5 +18,6 @@ type IStudentController interface {
 	UploadFile(c echo.Context) error
 
 	InsertToken(c echo.Context) error
+	GetNotifications(c echo.Context) error
 	// PasswordChangeRequest(c echo.Context) error
 }

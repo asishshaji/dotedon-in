@@ -182,6 +182,8 @@ func (sS StudentService) CreateTaskSubmission(ctx context.Context, taskDto model
 
 func (sS StudentService) GetTasks(ctx context.Context, studentId primitive.ObjectID) ([]models.TaskStudentResponse, error) {
 
+	fmt.Println(ctx.Value("student_id"))
+
 	taskStudentResponse := []models.TaskStudentResponse{}
 
 	student, err := sS.studentRepo.GetStudentByID(ctx, studentId)
@@ -316,4 +318,18 @@ func (sS StudentService) InsertToken(ctx context.Context, tK models.TokenDto, uI
 		Token:  tK.Token,
 	}
 	return sS.studentRepo.InsertToken(ctx, t)
+}
+
+func (sS StudentService) GetNotifications(ctx context.Context, uid primitive.ObjectID) ([]models.NotificationResponse, error) {
+	notifications := []models.NotificationResponse{}
+	notificationsEntity, err := sS.studentRepo.GetNotifications(ctx, uid)
+	for _, n := range notificationsEntity {
+		notifications = append(notifications, n.ToNotificationResponse())
+	}
+	if err != nil {
+		return notifications, err
+	}
+
+	return notifications, nil
+
 }

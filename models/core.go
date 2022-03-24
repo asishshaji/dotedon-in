@@ -190,3 +190,26 @@ type Token struct {
 	UserId primitive.ObjectID `bson:"user_id"`
 	Token  string             `bson:"token"`
 }
+
+type NotificationEntity struct {
+	Title     string
+	Content   string
+	Image     string
+	CreatedAt primitive.DateTime `bson:"created_at"`
+	UserId    primitive.ObjectID `bson:"user_id"`
+}
+
+type NotificationMessage struct {
+	UserToken string
+	Contents  map[string]string
+	Heading   map[string]string
+	CreatedAt primitive.DateTime `bson:"created_at"`
+}
+
+func (nE NotificationEntity) ToNotificationResponse() NotificationResponse {
+	return NotificationResponse{
+		Title:     nE.Title,
+		Content:   nE.Content,
+		CreatedAt: nE.CreatedAt,
+	}
+}

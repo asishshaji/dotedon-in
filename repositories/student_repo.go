@@ -21,6 +21,7 @@ type studentRepo struct {
 	collegeCollection        *mongo.Collection
 	coursesCollection        *mongo.Collection
 	tokenCollection          *mongo.Collection
+	notificationCollection   *mongo.Collection
 	l                        *log.Logger
 }
 
@@ -34,6 +35,7 @@ func NewStudentAuthRepo(l *log.Logger, db *mongo.Database) IStudentRepository {
 		coursesCollection:        db.Collection("courses"),
 		collegeCollection:        db.Collection("colleges"),
 		tokenCollection:          db.Collection("tokens"),
+		notificationCollection:   db.Collection("notifications"),
 		l:                        l,
 	}
 }
@@ -323,6 +325,25 @@ func (sR studentRepo) GetColleges(ctx context.Context) ([]models.StaticModel, er
 	}
 
 	return c, nil
+}
+
+func (sR studentRepo) GetNotifications(ctx context.Context, uid primitive.ObjectID) ([]models.NotificationEntity, error) {
+	notifications := []models.NotificationEntity{}
+
+	cursor, err := sR.notificationCollection.Find(ctx, bson.M{
+		"user_id": uid,
+	})
+
+	if err != nil {
+		return notifications, err
+	}
+
+	if err = cursor.All(ctx, &notifications); err != nil {
+		return notifications, err
+	}
+
+	return notifications, nil
+
 }
 
 func (sR studentRepo) GetCourses(ctx context.Context) ([]models.StaticModel, error) {

@@ -46,6 +46,8 @@ func NewApp(port string, controller Controllers) *App {
 
 	r.GET("/user", controller.StudentController.GetUser)
 	r.PUT("/user", controller.StudentController.UpdateStudent)
+	r.GET("/user/notification", controller.StudentController.GetNotifications)
+
 	r.GET("/mentors", controller.StudentController.GetMentors)
 	r.POST("/mentors", controller.StudentController.FollowMentor)
 	r.POST("/task/submit", controller.StudentController.CreateTaskSubmisson)

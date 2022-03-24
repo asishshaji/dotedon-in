@@ -74,3 +74,9 @@ type Data struct {
 	Colleges []string `json:"colleges"`
 	Courses  []string `json:"courses"`
 }
+
+type NotificationResponse struct {
+	Title     string             `json:"title"`
+	Content   string             `json:"content"`
+	CreatedAt primitive.DateTime `json:"created_at"`
+}
