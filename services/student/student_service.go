@@ -102,7 +102,6 @@ func (authService StudentService) LoginStudent(ctx context.Context, email, passw
 
 func (sS StudentService) UpdateStudent(ctx context.Context, student models.StudentDTO) error {
 	s := student.ToStudent()
-	fmt.Println(s.ID)
 	return sS.studentRepo.UpdateStudent(ctx, s)
 }
 func (authService StudentService) GetMentors(ctx context.Context, userid primitive.ObjectID) ([]*models.MentorResponse, error) {

@@ -11,20 +11,8 @@ type StudentJWTClaims struct {
 	jwt.StandardClaims
 }
 
-type AdminJWTClaims struct {
-	AdminId primitive.ObjectID
-	IsAdmin bool
-	jwt.StandardClaims
-}
-
 type Response struct {
 	Message interface{} `json:"message"`
-}
-
-type Admin struct {
-	ID       primitive.ObjectID `bson:"_id"`
-	Username string             `json:"username"`
-	password string             `json:"-"`
 }
 
 type Student struct {
@@ -40,7 +28,7 @@ type Student struct {
 	DOB              string               `json:"dob" validate:"required" bson:",omitempty"`
 	Gender           Gender               `json:"gender" validate:"required" bson:",omitempty"`
 	PhoneNumber      string               `json:"phone_number" validate:"required" bson:",omitempty"`
-	PhoneNumberAlt   string               `json:"phone_number_alt bson:",omitempty""`
+	PhoneNumberAlt   string               `json:"phone_number_alt" bson:",omitempty"`
 	College          string               `json:"college" validate:"required" bson:",omitempty"`
 	Course           string               `json:"course" validate:"required" bson:",omitempty"`
 	Specialization   string               `json:"specialization" validate:"required" bson:",omitempty"`
@@ -81,43 +69,6 @@ func (stu Student) ToStudentResponse() StudentResponse {
 		DateOfJoining:    stu.DateOfJoining,
 		CourseEndingDate: stu.CourseEndingDate,
 	}
-}
-
-type Students []Student
-
-func (students Students) ToStudentResponse() []StudentResponse {
-	studentReponse := []StudentResponse{}
-
-	for _, stu := range students {
-		studentReponse = append(studentReponse, StudentResponse{
-			ID:               stu.ID,
-			Email:            stu.Email,
-			FirstName:        stu.FirstName,
-			PreferedType:     stu.PreferedType,
-			LastName:         stu.LastName,
-			MiddleName:       stu.MiddleName,
-			CreatedAt:        stu.CreatedAt,
-			UpdatedAt:        stu.UpdatedAt,
-			DOB:              stu.DOB,
-			Gender:           Gender(stu.Gender).String(),
-			PhoneNumber:      stu.PhoneNumber,
-			PhoneNumberAlt:   stu.PhoneNumberAlt,
-			College:          stu.College,
-			Course:           stu.Course,
-			Specialization:   stu.Specialization,
-			HasArrears:       stu.HasArrears,
-			Place:            stu.Place,
-			Semester:         stu.Semester,
-			District:         stu.District,
-			State:            stu.State,
-			Country:          stu.Country,
-			DateOfJoining:    stu.DateOfJoining,
-			CourseEndingDate: stu.CourseEndingDate,
-		})
-	}
-
-	return studentReponse
-
 }
 
 type Mentor struct {
@@ -170,11 +121,6 @@ type TaskSubmission struct {
 	Status    Status             `json:"status"`
 	CreatedAt primitive.DateTime `bson:",omitempty"`
 	UpdatedAt primitive.DateTime `bson:",omitempty"`
-}
-
-type Type struct {
-	Name      string
-	CreatedOn primitive.DateTime
 }
 
 type TT struct {
