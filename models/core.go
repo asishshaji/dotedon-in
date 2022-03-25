@@ -78,6 +78,7 @@ type Mentor struct {
 	Organization string             `json:"organization" validate:"required"`
 	Domain       string             `json:"domain" validate:"required"`
 	Image        string             `json:"image"`
+	Videos       []Videos           `bson:"videos"`
 	CreatedAt    primitive.DateTime `bson:",omitempty"`
 	UpdatedAt    primitive.DateTime `bson:",omitempty"`
 }
@@ -97,6 +98,7 @@ func (dto *Mentor) ToResponse() *MentorResponse {
 		Organization: dto.Organization,
 		Domain:       dto.Domain,
 		CreatedAt:    dto.CreatedAt,
+		Videos:       dto.Videos,
 		Image:        dto.Image,
 	}
 }

@@ -36,6 +36,7 @@ type MentorResponse struct {
 	Domain       string             `json:"domain"`
 	CreatedAt    primitive.DateTime `json:"created_at"`
 	Image        string             `json:"image"`
+	Videos       []Videos           `json:"videos"`
 }
 
 type TaskStudentResponse struct {

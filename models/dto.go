@@ -6,12 +6,13 @@ import (
 )
 
 type MentorDTO struct {
-	Id           string `json:"_id"`
-	Name         string `validate:"required"`
-	Title        string `validate:"required"`
-	Organization string `validate:"required"`
-	Image        string `validate:"required"`
-	Domain       string `validate:"required"`
+	Id           string   `json:"_id"`
+	Name         string   `validate:"required"`
+	Title        string   `validate:"required"`
+	Organization string   `validate:"required"`
+	Image        string   `validate:"required"`
+	Domain       string   `validate:"required"`
+	Videos       []Videos `json:"videos"`
 }
 
 func (mentor MentorDTO) Validate() error {
@@ -29,6 +30,7 @@ func (dto MentorDTO) ToMentor() Mentor {
 		Organization: dto.Organization,
 		Image:        dto.Image,
 		Domain:       dto.Domain,
+		Videos:       dto.Videos,
 	}
 }
 
@@ -119,4 +121,9 @@ func (stu StudentDTO) ToStudent() Student {
 
 type TokenDto struct {
 	Token string
+}
+
+type Videos struct {
+	ThumbUrl string `json:"thumbnail"`
+	VideoUrl string `json:"video"`
 }

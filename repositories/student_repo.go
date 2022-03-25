@@ -290,6 +290,9 @@ func (sR studentRepo) GetMentorIDsFollowedByStudent(ctx context.Context, userid 
 		sR.l.Println(err)
 		return nil, err
 	}
+	if len(mentors) == 0 {
+		return []primitive.ObjectID{}, nil
+	}
 
 	men := mentors[0].Mentors
 	if men != nil {
