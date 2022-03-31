@@ -19,9 +19,8 @@ type Student struct {
 	ID               primitive.ObjectID   `bson:"_id,omitempty" json:"_id"`
 	Email            string               `json:"email" validate:"required" bson:",omitempty"`
 	FirstName        string               `json:"first_name" validate:"required" bson:",omitempty"`
-	PreferedType     PreferedType         `json:"type" bson:",omitempty"`
+	Domains          []string             `json:"domains" bson:",omitempty"`
 	LastName         string               `json:"last_name" validate:"required" bson:",omitempty"`
-	MiddleName       string               `json:"middle_name" bson:",omitempty"`
 	CreatedAt        primitive.DateTime   `json:"-" bson:",omitempty"`
 	UpdatedAt        primitive.DateTime   `json:"-" bson:",omitempty"`
 	Password         string               `json:"password" validate:"required,min=4" bson:",omitempty"`
@@ -33,7 +32,7 @@ type Student struct {
 	Course           string               `json:"course" validate:"required" bson:",omitempty"`
 	Specialization   string               `json:"specialization" validate:"required" bson:",omitempty"`
 	HasArrears       bool                 `json:"has_arrears" validate:"required" bson:",omitempty"`
-	Place            string               `json:"place" validate:"required" bson:",omitempty"`
+	CollegeLocation  string               `json:"college_location" validate:"required" bson:",omitempty"`
 	Semester         string               `json:"semester" validate:"required" bson:",omitempty"`
 	District         string               `json:"district" validate:"required" bson:",omitempty"`
 	State            string               `json:"state" validate:"required" bson:",omitempty"`
@@ -48,9 +47,8 @@ func (stu Student) ToStudentResponse() StudentResponse {
 		ID:               stu.ID,
 		Email:            stu.Email,
 		FirstName:        stu.FirstName,
-		PreferedType:     stu.PreferedType,
+		Domains:          stu.Domains,
 		LastName:         stu.LastName,
-		MiddleName:       stu.MiddleName,
 		CreatedAt:        stu.CreatedAt,
 		UpdatedAt:        stu.UpdatedAt,
 		DOB:              stu.DOB,
@@ -59,9 +57,8 @@ func (stu Student) ToStudentResponse() StudentResponse {
 		PhoneNumberAlt:   stu.PhoneNumberAlt,
 		College:          stu.College,
 		Course:           stu.Course,
-		Specialization:   stu.Specialization,
 		HasArrears:       stu.HasArrears,
-		Place:            stu.Place,
+		CollegeLocation:  stu.CollegeLocation,
 		Semester:         stu.Semester,
 		District:         stu.District,
 		State:            stu.State,

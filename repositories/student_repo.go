@@ -102,6 +102,35 @@ func (uR studentRepo) GetMentorsNotInIDS(ctx context.Context, ids []primitive.Ob
 
 }
 
+func (uR studentRepo) AddDomainToStudent(ctx context.Context, userID primitive.ObjectID, domain string) error {
+	options := bson.M{
+		"$addToSet": bson.M{
+			"domains": domain,
+		},
+	}
+	_, err := uR.studentCollection.UpdateByID(ctx, userID, options)
+	if err != nil {
+		uR.l.Println(err)
+		return err
+	}
+	return nil
+}
+
+func (uR studentRepo) GetMentorByID(ctx context.Context, mentorId primitive.ObjectID) (models.Mentor, error) {
+	mentor := models.Mentor{}
+
+	res := uR.mentorCollection.FindOne(ctx, bson.M{
+		"_id": mentorId,
+	})
+
+	if err := res.Decode(&mentor); err != nil {
+		uR.l.Println(err)
+		return mentor, err
+	}
+
+	return mentor, nil
+}
+
 func (uR studentRepo) AddMentorToStudent(ctx context.Context, studentId primitive.ObjectID, mentorId primitive.ObjectID) error {
 
 	options := bson.M{
@@ -119,6 +148,11 @@ func (uR studentRepo) AddMentorToStudent(ctx context.Context, studentId primitiv
 	if res.MatchedCount == 0 {
 		uR.l.Println("No student found with id:", studentId)
 		return models.ErrNoStudentWithIdExists
+	}
+
+	if res.ModifiedCount == 0 {
+		uR.l.Println("Already following mentor")
+		return models.ErrAlreadyFollowing
 	}
 
 	return nil
@@ -160,7 +194,7 @@ func (sR studentRepo) UpdateStudent(ctx context.Context, student models.Student)
 	doc := bson.M{"$set": up}
 
 	res, err := sR.studentCollection.UpdateOne(ctx, bson.M{
-		"email": student.Email,
+		"_id": student.ID,
 	}, doc, opts)
 
 	if err != nil {
@@ -201,12 +235,26 @@ func (sR studentRepo) CreateTaskSubmission(ctx context.Context, task models.Task
 	return nil
 
 }
-func (sR studentRepo) GetTasks(ctx context.Context, typeVar string) ([]models.Task, error) {
+func (sR studentRepo) GetTasks(ctx context.Context, domains, sems []string) ([]models.Task, error) {
 	tasks := []models.Task{}
 
-	// TODO add filter queries: semester, type
 	cursor, err := sR.taskCollection.Find(ctx, bson.M{
-		"type": typeVar,
+		"$and": bson.A{
+			bson.D{
+				{
+					"type", bson.D{{
+						"$in", domains,
+					}},
+				},
+			},
+			bson.D{
+				{
+					"semester", bson.D{{
+						"$in", sems,
+					}},
+				},
+			},
+		},
 	})
 
 	if err != nil {

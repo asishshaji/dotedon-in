@@ -131,3 +131,18 @@ func CreateIndex(db *mongo.Database, collectionName string, field string, unique
 	// 6. All went well, we return true
 	return true
 }
+
+func GenerateSemesters(sem string) []string {
+	var sems []string
+	var s string = "S1"
+	var idx = 1
+
+	for s != sem {
+		s = "S"
+		s = s + fmt.Sprint(idx)
+		idx++
+		sems = append(sems, s)
+	}
+
+	return sems
+}

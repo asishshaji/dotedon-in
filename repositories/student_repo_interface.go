@@ -12,13 +12,15 @@ type IStudentRepository interface {
 	CheckStudentExistsWithEmail(ctx context.Context, email string) bool
 	GetStudentByEmail(ctx context.Context, email string) *models.Student
 	UpdateStudent(ctx context.Context, student models.Student) error
+	AddDomainToStudent(ctx context.Context, userID primitive.ObjectID, domain string) error
 
 	GetMentorIDsFollowedByStudent(ctx context.Context, userid primitive.ObjectID) ([]primitive.ObjectID, error)
 	GetMentorsNotInIDS(c context.Context, ids []primitive.ObjectID) ([]*models.Mentor, error)
 	AddMentorToStudent(ctx context.Context, userId primitive.ObjectID, mentorId primitive.ObjectID) error
+	GetMentorByID(ctx context.Context, mentorId primitive.ObjectID) (models.Mentor, error)
 
 	UpdateTaskSubmission(ctx context.Context, task models.TaskSubmission) error
-	GetTasks(ctx context.Context, typeVar string) ([]models.Task, error)
+	GetTasks(ctx context.Context, domains, sems []string) ([]models.Task, error)
 	GetTaskSubmissions(ctx context.Context, userId primitive.ObjectID) ([]models.TaskSubmission, error)
 	CreateTaskSubmission(ctx context.Context, task models.TaskSubmission) error
 

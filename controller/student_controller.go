@@ -26,8 +26,6 @@ func NewStudentController(l *log.Logger, uS student_service.IStudentService) ISt
 
 func (uC StudentController) RegisterStudent(c echo.Context) error {
 
-	fmt.Println("Hello")
-
 	user := models.StudentDTO{}
 
 	if err := json.NewDecoder(c.Request().Body).Decode(&user); err != nil {
@@ -96,7 +94,7 @@ func (sC StudentController) UpdateStudent(c echo.Context) error {
 		sC.l.Println("Error parsing user details")
 		return echo.ErrInternalServerError
 	}
-	err := sC.studentService.UpdateStudent(c.Request().Context(), sDto)
+	err := sC.studentService.UpdateStudent(c.Request().Context(), c.Get("student_id").(primitive.ObjectID), sDto)
 	if err != nil {
 		sC.l.Println(err)
 		return echo.ErrInternalServerError
@@ -125,19 +123,23 @@ func (uC StudentController) GetMentors(c echo.Context) error {
 }
 
 func (uC StudentController) FollowMentor(c echo.Context) error {
-	// change updated time of user
-
-	mentorId := c.FormValue("mentor_id")
+	mentorId := c.Param("id")
 
 	mentorObjId, err := primitive.ObjectIDFromHex(mentorId)
+	fmt.Println(mentorObjId)
 
 	if err != nil {
 		uC.l.Println(err)
 		return err
 	}
 
-	uC.studentService.AddMentorToStudent(c.Request().Context(), c.Get("student_id").(primitive.ObjectID), mentorObjId)
-	return nil
+	err = uC.studentService.AddMentorToStudent(c.Request().Context(), c.Get("student_id").(primitive.ObjectID), mentorObjId)
+	if err != nil {
+		return c.JSON(http.StatusConflict, models.Response{
+			Message: err.Error(),
+		})
+	}
+	return c.NoContent(http.StatusOK)
 }
 
 func (sU StudentController) CreateTaskSubmisson(c echo.Context) error {

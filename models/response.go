@@ -6,9 +6,8 @@ type StudentResponse struct {
 	ID               primitive.ObjectID `json:"id"`
 	Email            string             `json:"email"`
 	FirstName        string             `json:"first_name"`
-	PreferedType     PreferedType       `json:"type"`
+	Domains          []string           `json:"domains"`
 	LastName         string             `json:"last_name"`
-	MiddleName       string             `json:"middle_name"`
 	CreatedAt        primitive.DateTime `json:"created_at"`
 	UpdatedAt        primitive.DateTime `json:"updated_at"`
 	DOB              string             `json:"dob"`
@@ -17,9 +16,8 @@ type StudentResponse struct {
 	PhoneNumberAlt   string             `json:"phone_number_alt"`
 	College          string             `json:"college"`
 	Course           string             `json:"course"`
-	Specialization   string             `json:"specialization"`
 	HasArrears       bool               `json:"has_arrears"`
-	Place            string             `json:"place"`
+	CollegeLocation  string             `json:"college_location"`
 	Semester         string             `json:"semester"`
 	District         string             `json:"district"`
 	State            string             `json:"state"`
@@ -53,16 +51,6 @@ type TaskStudentResponse struct {
 type StudentTaskRespone struct {
 	Username string             `json:"username"`
 	Id       primitive.ObjectID `json:"_id" bson:"_id"`
-}
-
-type TaskSubmissionsAdminResponse struct {
-	ID      primitive.ObjectID `json:"_id" bson:"_id"`
-	FileURL string             `json:"fileurl"`
-	Status  Status             `json:"status"`
-	Comment string             `json:"comment"`
-	Task    Task               `json:"task"`
-	Student StudentTaskRespone `json:"student"`
-	// UpdatedAt primitive.DateTime `json:"updated_at"`
 }
 
 type StudentLoginResponse struct {

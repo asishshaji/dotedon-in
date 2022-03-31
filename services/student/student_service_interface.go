@@ -12,13 +12,13 @@ type IStudentService interface {
 	RegisterStudent(ctx context.Context, student *models.StudentDTO) error
 	LoginStudent(ctx context.Context, studentname, password string) (models.StudentLoginResponse, error)
 	GetStudent(ctx context.Context, studentId primitive.ObjectID) (models.StudentResponse, error)
-	UpdateStudent(ctx context.Context, student models.StudentDTO) error
+	UpdateStudent(ctx context.Context, uid primitive.ObjectID, student models.StudentDTO) error
 
 	GetMentors(ctx context.Context, userid primitive.ObjectID) ([]*models.MentorResponse, error)
 	AddMentorToStudent(ctx context.Context, studentId, mentorId primitive.ObjectID) error
 
 	UpdateTaskSubmission(ctx context.Context, taskDto models.TaskSubmissionDTO, userID primitive.ObjectID) error
-	GetTasks(ctx context.Context, studentId primitive.ObjectID) ([]models.TaskStudentResponse, error)
+	GetTasks(ctx context.Context, studentId primitive.ObjectID) (map[string][]models.TaskStudentResponse, error)
 	CreateTaskSubmission(ctx context.Context, task models.TaskSubmissionDTO, userID primitive.ObjectID) error
 
 	GetData(ctx context.Context) (models.Data, error)

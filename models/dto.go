@@ -64,27 +64,24 @@ func (task *TaskDTO) Validate() error {
 }
 
 type StudentDTO struct {
-	Email            string       `json:"email" validate:"required"`
-	FirstName        string       `json:"first_name" validate:"required"`
-	PreferedType     PreferedType `json:"type"`
-	LastName         string       `json:"last_name" validate:"required"`
-	MiddleName       string       `json:"middle_name"`
-	Password         string       `json:"password" validate:"required,min=4"`
-	DOB              string       `json:"dob" validate:"required"`
-	Gender           Gender       `json:"gender" validate:"required"`
-	PhoneNumber      string       `json:"phone_number" validate:"required"`
-	PhoneNumberAlt   string       `json:"phone_number_alt"`
-	College          string       `json:"college" validate:"required"`
-	Course           string       `json:"course" validate:"required"`
-	Specialization   string       `json:"specialization" validate:"required"`
-	HasArrears       bool         `json:"has_arrears"`
-	Place            string       `json:"place" validate:"required"`
-	Semester         string       `json:"semester" validate:"required"`
-	District         string       `json:"district" validate:"required"`
-	State            string       `json:"state" validate:"required"`
-	Country          string       `json:"country" validate:"required"`
-	DateOfJoining    string       `json:"date_of_joining"`
-	CourseEndingDate string       `json:"course_ending_date"`
+	Email            string `json:"email" validate:"required"`
+	FirstName        string `json:"first_name" validate:"required"`
+	LastName         string `json:"last_name" validate:"required"`
+	Password         string `json:"password" validate:"required,min=4"`
+	DOB              string `json:"dob" validate:"required"`
+	Gender           Gender `json:"gender" validate:"required"`
+	PhoneNumber      string `json:"phone_number" validate:"required"`
+	PhoneNumberAlt   string `json:"phone_number_alt"`
+	College          string `json:"college" validate:"required"`
+	Course           string `json:"course" validate:"required"`
+	HasArrears       bool   `json:"has_arrears"`
+	CollegeLocation  string `json:"college_location" validate:"required"`
+	Semester         string `json:"semester" validate:"required"`
+	District         string `json:"district" validate:"required"`
+	State            string `json:"state" validate:"required"`
+	Country          string `json:"country" validate:"required"`
+	DateOfJoining    string `json:"date_of_joining"`
+	CourseEndingDate string `json:"course_ending_date"`
 }
 
 func (Student *StudentDTO) Validate() error {
@@ -97,18 +94,15 @@ func (stu StudentDTO) ToStudent() Student {
 	return Student{
 		Email:            stu.Email,
 		FirstName:        stu.FirstName,
-		PreferedType:     stu.PreferedType,
 		LastName:         stu.LastName,
-		MiddleName:       stu.MiddleName,
 		DOB:              stu.DOB,
 		Gender:           Gender(stu.Gender),
 		PhoneNumber:      stu.PhoneNumber,
 		PhoneNumberAlt:   stu.PhoneNumberAlt,
 		College:          stu.College,
 		Course:           stu.Course,
-		Specialization:   stu.Specialization,
 		HasArrears:       stu.HasArrears,
-		Place:            stu.Place,
+		CollegeLocation:  stu.CollegeLocation,
 		Semester:         stu.Semester,
 		Password:         stu.Password,
 		District:         stu.District,

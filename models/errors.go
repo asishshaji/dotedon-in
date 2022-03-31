@@ -9,3 +9,5 @@ var ErrNoStudentWithIdExists = fmt.Errorf("no Student with id exists")
 var ErrParsingStudent = fmt.Errorf("error parsing student data from database")
 
 var ErrTaskSubmissionExists = fmt.Errorf("task submission already exists")
+
+var ErrAlreadyFollowing = fmt.Errorf("already following mentor")

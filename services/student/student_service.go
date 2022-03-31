@@ -3,7 +3,6 @@ package student_service
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"mime/multipart"
 	"os"
@@ -100,8 +99,9 @@ func (authService StudentService) LoginStudent(ctx context.Context, email, passw
 
 }
 
-func (sS StudentService) UpdateStudent(ctx context.Context, student models.StudentDTO) error {
+func (sS StudentService) UpdateStudent(ctx context.Context, uid primitive.ObjectID, student models.StudentDTO) error {
 	s := student.ToStudent()
+	s.ID = uid
 	return sS.studentRepo.UpdateStudent(ctx, s)
 }
 func (authService StudentService) GetMentors(ctx context.Context, userid primitive.ObjectID) ([]*models.MentorResponse, error) {
@@ -130,6 +130,17 @@ func (authService StudentService) AddMentorToStudent(ctx context.Context, userId
 	if err != nil {
 		return err
 	}
+
+	mentor, err := authService.studentRepo.GetMentorByID(ctx, mentorId)
+	if err != nil {
+		return err
+	}
+
+	err = authService.studentRepo.AddDomainToStudent(ctx, userId, mentor.Domain)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -179,11 +190,7 @@ func (sS StudentService) CreateTaskSubmission(ctx context.Context, taskDto model
 	return sS.studentRepo.CreateTaskSubmission(ctx, task)
 }
 
-func (sS StudentService) GetTasks(ctx context.Context, studentId primitive.ObjectID) ([]models.TaskStudentResponse, error) {
-
-	fmt.Println(ctx.Value("student_id"))
-
-	taskStudentResponse := []models.TaskStudentResponse{}
+func (sS StudentService) GetTasks(ctx context.Context, studentId primitive.ObjectID) (map[string][]models.TaskStudentResponse, error) {
 
 	student, err := sS.studentRepo.GetStudentByID(ctx, studentId)
 
@@ -196,29 +203,21 @@ func (sS StudentService) GetTasks(ctx context.Context, studentId primitive.Objec
 		return nil, err
 	}
 
-	tasks, err := sS.studentRepo.GetTasks(ctx, string(student.PreferedType))
+	sems := utils.GenerateSemesters(student.Semester)
+
+	tasks, err := sS.studentRepo.GetTasks(ctx, student.Domains, sems)
 	if err != nil {
 		return nil, err
 	}
 
-	studentSem := student.Semester
-	var sems []string
-	var s string = "S1"
-	var idx = 1
+	tSR := make(map[string][]models.TaskStudentResponse)
 
-	for s != studentSem {
-		s = "S"
-		s = s + fmt.Sprint(idx)
-		idx++
-		sems = append(sems, s)
-	}
-	// TODO GET TASKS BASED ON SEM
 	for _, t := range tasks {
-
 		for _, b := range sems {
 			if b == t.Semester {
 				fileUrl, comment, status := getFileAndCommentsForTaskIdAndUserId(taskSubmission, t.Id, studentId)
-				taskStudentResponse = append(taskStudentResponse, models.TaskStudentResponse{
+
+				tSR[t.Type] = append(tSR[t.Type], models.TaskStudentResponse{
 					ID:        t.Id,
 					Title:     t.Title,
 					Detail:    t.Detail,
@@ -228,12 +227,24 @@ func (sS StudentService) GetTasks(ctx context.Context, studentId primitive.Objec
 					UpdatedAt: "",
 					Semester:  t.Semester,
 				})
+
+				// taskStudentResponse = append(taskStudentResponse, models.TaskStudentResponse{
+				// 	ID:        t.Id,
+				// 	Title:     t.Title,
+				// 	Detail:    t.Detail,
+				// 	Status:    status,
+				// 	FileURL:   fileUrl,
+				// 	Comments:  comment,
+				// 	UpdatedAt: "",
+				// 	Semester:  t.Semester,
+				// })
 			}
 		}
 
 	}
 
-	return taskStudentResponse, nil
+	return tSR, nil
+
 }
 
 func getFileAndCommentsForTaskIdAndUserId(tS []models.TaskSubmission, taskID, userID primitive.ObjectID) (string, string, models.Status) {

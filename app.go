@@ -39,17 +39,18 @@ func NewApp(port string, controller Controllers) *App {
 		SigningKey: []byte(os.Getenv("JWT_SECRET")),
 	}
 
-	r := e.Group("/restricted")
+	r := e.Group("/user")
 
 	r.Use(middleware.JWTWithConfig(studentJwtConfig))
 	r.Use(utils.StudentAuthenticationMiddleware)
 
-	r.GET("/user", controller.StudentController.GetUser)
-	r.PUT("/user", controller.StudentController.UpdateStudent)
-	r.GET("/user/notification", controller.StudentController.GetNotifications)
+	r.GET("/", controller.StudentController.GetUser)
+	r.PATCH("/", controller.StudentController.UpdateStudent)
+	r.GET("/notification", controller.StudentController.GetNotifications)
 
-	r.GET("/mentors", controller.StudentController.GetMentors)
-	r.POST("/mentors", controller.StudentController.FollowMentor)
+	r.GET("/mentor", controller.StudentController.GetMentors)
+	r.POST("/mentor/:id", controller.StudentController.FollowMentor)
+
 	r.POST("/task/submit", controller.StudentController.CreateTaskSubmisson)
 	r.PUT("/task/submit", controller.StudentController.UpdateTaskSubmission)
 	r.GET("/task", controller.StudentController.GetTasks)
