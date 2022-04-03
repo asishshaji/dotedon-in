@@ -42,5 +42,5 @@ func (iS FileService) UploadFile(ctx context.Context, file multipart.File) (stri
 		return "", err
 	}
 
-	return res.URL, nil
+	return res.SecureURL, nil
 }
