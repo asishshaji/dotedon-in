@@ -103,8 +103,8 @@ func (dto *Mentor) ToResponse() *MentorResponse {
 type Task struct {
 	Id        primitive.ObjectID `json:"id" bson:"_id"`
 	Semester  string             `json:"semester"`
-	Type      string             `json:"type"`  // TYPE CAN BE RETAIL, ED-Tech
-	Title     string             `json:"title"` // title of task
+	Domain    string             `json:"domain"`
+	Title     string             `json:"title"`
 	Detail    string             `json:"detail"`
 	CreatedAt primitive.DateTime `json:"created_at" bson:",omitempty"`
 	UpdatedAt primitive.DateTime `json:"updated_at" bson:",omitempty"`
@@ -117,6 +117,8 @@ type TaskSubmission struct {
 	Comment   string             `json:"comment"`
 	FileURL   string             `json:"fileurl" bson:",omitempty"`
 	Feedback  string
+	Semester  string
+	Domain    string
 	Status    Status             `json:"status"`
 	CreatedAt primitive.DateTime `bson:",omitempty"`
 	UpdatedAt primitive.DateTime `bson:",omitempty"`

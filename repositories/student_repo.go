@@ -2,6 +2,7 @@ package student_repository
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/asishshaji/dotedon-api/models"
@@ -235,14 +236,14 @@ func (sR studentRepo) CreateTaskSubmission(ctx context.Context, task models.Task
 	return nil
 
 }
-func (sR studentRepo) GetTasks(ctx context.Context, domains, sems []string) ([]models.Task, error) {
+func (sR studentRepo) GetTasksBySemestersAndDomains(ctx context.Context, domains, sems []string) ([]models.Task, error) {
 	tasks := []models.Task{}
 
 	cursor, err := sR.taskCollection.Find(ctx, bson.M{
 		"$and": bson.A{
 			bson.D{
 				{
-					"type", bson.D{{
+					"domain", bson.D{{
 						"$in", domains,
 					}},
 				},
@@ -270,10 +271,45 @@ func (sR studentRepo) GetTasks(ctx context.Context, domains, sems []string) ([]m
 	return tasks, nil
 }
 
-func (sR studentRepo) GetTaskSubmissions(ctx context.Context, userId primitive.ObjectID) ([]models.TaskSubmission, error) {
+func (sR studentRepo) GetTaskByID(ctx context.Context, taskID primitive.ObjectID) (models.Task, error) {
+
+	task := models.Task{}
+
+	res := sR.taskCollection.FindOne(ctx, bson.M{
+		"_id": taskID,
+	})
+
+	if res.Err() == mongo.ErrNoDocuments {
+		return task, fmt.Errorf("no tasks found")
+	}
+
+	if err := res.Decode(&task); err != nil {
+		return task, err
+	}
+
+	return task, nil
+
+}
+
+func (sR studentRepo) GetTaskSubmissionsBySemesters(ctx context.Context, userId primitive.ObjectID, semesters []string) ([]models.TaskSubmission, error) {
 	submissions := []models.TaskSubmission{}
 	cursor, err := sR.taskSubmissionCollection.Find(ctx, bson.M{
-		"userid": userId,
+		"$and": bson.A{
+			bson.D{
+				{
+					"userid", userId,
+				},
+			},
+			bson.D{
+				{
+					"semester", bson.D{
+						{
+							"$in", semesters,
+						},
+					},
+				},
+			},
+		},
 	})
 	if err != nil {
 		sR.l.Println(err)
@@ -424,4 +460,13 @@ func (sR studentRepo) InsertToken(ctx context.Context, tK models.Token) error {
 		return err
 	}
 	return nil
+}
+
+func (sR studentRepo) GetSubmissionCountStat(ctx context.Context, studentID primitive.ObjectID, status models.Status) (int64, error) {
+
+	return sR.taskSubmissionCollection.CountDocuments(ctx, bson.M{
+		"userid": studentID,
+		"status": status,
+	})
+
 }

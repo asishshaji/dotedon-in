@@ -3,6 +3,7 @@ package student_service
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"mime/multipart"
 	"os"
@@ -43,9 +44,9 @@ func (authService StudentService) RegisterStudent(ctx context.Context, userDto *
 	}
 
 	user := userDto.ToStudent()
-	user.ID = primitive.NewObjectIDFromTimestamp(time.Now())
-	user.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
-	user.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
+	user.ID = primitive.NewObjectIDFromTimestamp(time.Now().UTC())
+	user.CreatedAt = primitive.NewDateTimeFromTime(time.Now().UTC())
+	user.UpdatedAt = primitive.NewDateTimeFromTime(time.Now().UTC())
 
 	hasedpassword, err := utils.Hashpassword(user.Password)
 
@@ -80,7 +81,7 @@ func (authService StudentService) LoginStudent(ctx context.Context, email, passw
 	claims := &models.StudentJWTClaims{
 		user.ID,
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
+			ExpiresAt: time.Now().UTC().Add(time.Hour * 72).Unix(),
 		},
 	}
 
@@ -152,11 +153,17 @@ func (sS StudentService) UpdateTaskSubmission(ctx context.Context, taskDto model
 		sS.l.Println(err)
 		return err
 	}
+	t, err := sS.studentRepo.GetTaskByID(ctx, taskObjID)
+	if err != nil {
+		return err
+	}
 
 	task := models.TaskSubmission{}
 	task.TaskId = taskObjID
 	task.UserId = userID
 	task.Comment = taskDto.Comment
+	task.Semester = t.Semester
+	task.Domain = t.Domain
 	task.FileURL = taskDto.FileURL
 	task.Status = models.ACTIVE
 	task.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
@@ -171,21 +178,28 @@ func (sS StudentService) UpdateTaskSubmission(ctx context.Context, taskDto model
 
 func (sS StudentService) CreateTaskSubmission(ctx context.Context, taskDto models.TaskSubmissionDTO, userID primitive.ObjectID) error {
 	taskObjID, err := primitive.ObjectIDFromHex(taskDto.TaskId)
-	// TODO check if task exists
 
 	if err != nil {
 		sS.l.Println(err)
 		return err
 	}
+	fmt.Println(taskObjID)
+
+	t, err := sS.studentRepo.GetTaskByID(ctx, taskObjID)
+	if err != nil {
+		return err
+	}
 
 	task := models.TaskSubmission{}
 	task.TaskId = taskObjID
+	task.Semester = t.Semester
+	task.Domain = t.Domain
 	task.FileURL = taskDto.FileURL
 	task.UserId = userID
 	task.Comment = taskDto.Comment
 	task.Status = models.ACTIVE
-	task.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
-	task.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
+	task.CreatedAt = primitive.NewDateTimeFromTime(time.Now().UTC())
+	task.UpdatedAt = primitive.NewDateTimeFromTime(time.Now().UTC())
 
 	return sS.studentRepo.CreateTaskSubmission(ctx, task)
 }
@@ -198,14 +212,18 @@ func (sS StudentService) GetTasks(ctx context.Context, studentId primitive.Objec
 		return nil, err
 	}
 
-	taskSubmission, err := sS.studentRepo.GetTaskSubmissions(ctx, studentId)
+	sems := utils.GenerateSemesters(student.Semester)
+
+	taskSubmission, err := sS.studentRepo.GetTaskSubmissionsBySemesters(ctx, studentId, sems)
 	if err != nil {
 		return nil, err
 	}
 
-	sems := utils.GenerateSemesters(student.Semester)
+	if len(student.Domains) == 0 {
+		return nil, fmt.Errorf("follow mentors")
+	}
 
-	tasks, err := sS.studentRepo.GetTasks(ctx, student.Domains, sems)
+	tasks, err := sS.studentRepo.GetTasksBySemestersAndDomains(ctx, student.Domains, sems)
 	if err != nil {
 		return nil, err
 	}
@@ -213,33 +231,20 @@ func (sS StudentService) GetTasks(ctx context.Context, studentId primitive.Objec
 	tSR := make(map[string][]models.TaskStudentResponse)
 
 	for _, t := range tasks {
-		for _, b := range sems {
-			if b == t.Semester {
-				fileUrl, comment, status := getFileAndCommentsForTaskIdAndUserId(taskSubmission, t.Id, studentId)
+		fmt.Println(t)
 
-				tSR[t.Type] = append(tSR[t.Type], models.TaskStudentResponse{
-					ID:        t.Id,
-					Title:     t.Title,
-					Detail:    t.Detail,
-					Status:    status,
-					FileURL:   fileUrl,
-					Comments:  comment,
-					UpdatedAt: "",
-					Semester:  t.Semester,
-				})
+		fileUrl, comment, status, updatedAt := getDataFromTaskSubmission(taskSubmission, t.Id, studentId)
 
-				// taskStudentResponse = append(taskStudentResponse, models.TaskStudentResponse{
-				// 	ID:        t.Id,
-				// 	Title:     t.Title,
-				// 	Detail:    t.Detail,
-				// 	Status:    status,
-				// 	FileURL:   fileUrl,
-				// 	Comments:  comment,
-				// 	UpdatedAt: "",
-				// 	Semester:  t.Semester,
-				// })
-			}
-		}
+		tSR[t.Domain] = append(tSR[t.Domain], models.TaskStudentResponse{
+			ID:        t.Id,
+			Title:     t.Title,
+			Detail:    t.Detail,
+			Status:    status,
+			FileURL:   fileUrl,
+			Comments:  comment,
+			UpdatedAt: updatedAt.Time().String(),
+			Semester:  t.Semester,
+		})
 
 	}
 
@@ -247,13 +252,13 @@ func (sS StudentService) GetTasks(ctx context.Context, studentId primitive.Objec
 
 }
 
-func getFileAndCommentsForTaskIdAndUserId(tS []models.TaskSubmission, taskID, userID primitive.ObjectID) (string, string, models.Status) {
+func getDataFromTaskSubmission(tS []models.TaskSubmission, taskID, userID primitive.ObjectID) (string, string, models.Status, primitive.DateTime) {
 	for _, t := range tS {
 		if t.TaskId == taskID && t.UserId == userID {
-			return t.FileURL, t.Comment, t.Status
+			return t.FileURL, t.Comment, t.Status, t.UpdatedAt
 		}
 	}
-	return "", "", models.INACTIVE // havent started yet
+	return "", "", models.INACTIVE, primitive.NewDateTimeFromTime(time.Unix(0, 0))
 }
 
 func (sS StudentService) GetStudent(ctx context.Context, studentId primitive.ObjectID) (models.StudentResponse, error) {
@@ -261,7 +266,31 @@ func (sS StudentService) GetStudent(ctx context.Context, studentId primitive.Obj
 	if err != nil {
 		return models.StudentResponse{}, err
 	}
-	return student.ToStudentResponse(), nil
+
+	stu := student.ToStudentResponse()
+
+	completedCount, err := sS.studentRepo.GetSubmissionCountStat(ctx, studentId, models.COMPLETED)
+	if err != nil {
+		sS.l.Println(err)
+		completedCount = 0
+	}
+	rejectedCount, err := sS.studentRepo.GetSubmissionCountStat(ctx, studentId, models.REJECTED)
+	if err != nil {
+		sS.l.Println(err)
+		rejectedCount = 0
+	}
+
+	activeCount, err := sS.studentRepo.GetSubmissionCountStat(ctx, studentId, models.ACTIVE)
+	if err != nil {
+		sS.l.Println(err)
+		activeCount = 0
+	}
+
+	stu.CompletedSubmissionCount = completedCount
+	stu.RejectedSubmissionCount = rejectedCount
+	stu.ActiveSubmissionCount = activeCount
+
+	return stu, nil
 }
 
 func (sS StudentService) GetData(ctx context.Context) (models.Data, error) {

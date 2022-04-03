@@ -3,27 +3,30 @@ package models
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type StudentResponse struct {
-	ID               primitive.ObjectID `json:"id"`
-	Email            string             `json:"email"`
-	FirstName        string             `json:"first_name"`
-	Domains          []string           `json:"domains"`
-	LastName         string             `json:"last_name"`
-	CreatedAt        primitive.DateTime `json:"created_at"`
-	UpdatedAt        primitive.DateTime `json:"updated_at"`
-	DOB              string             `json:"dob"`
-	Gender           string             `json:"gender"`
-	PhoneNumber      string             `json:"phone_number"`
-	PhoneNumberAlt   string             `json:"phone_number_alt"`
-	College          string             `json:"college"`
-	Course           string             `json:"course"`
-	HasArrears       bool               `json:"has_arrears"`
-	CollegeLocation  string             `json:"college_location"`
-	Semester         string             `json:"semester"`
-	District         string             `json:"district"`
-	State            string             `json:"state"`
-	Country          string             `json:"country"`
-	DateOfJoining    string             `json:"date_of_joining"`
-	CourseEndingDate string             `json:"course_ending_date"`
+	ID                       primitive.ObjectID `json:"id"`
+	Email                    string             `json:"email"`
+	FirstName                string             `json:"first_name"`
+	Domains                  []string           `json:"domains"`
+	LastName                 string             `json:"last_name"`
+	CreatedAt                primitive.DateTime `json:"created_at"`
+	UpdatedAt                primitive.DateTime `json:"updated_at"`
+	DOB                      string             `json:"dob"`
+	Gender                   string             `json:"gender"`
+	PhoneNumber              string             `json:"phone_number"`
+	PhoneNumberAlt           string             `json:"phone_number_alt"`
+	College                  string             `json:"college"`
+	Course                   string             `json:"course"`
+	HasArrears               bool               `json:"has_arrears"`
+	CollegeLocation          string             `json:"college_location"`
+	Semester                 string             `json:"semester"`
+	District                 string             `json:"district"`
+	State                    string             `json:"state"`
+	Country                  string             `json:"country"`
+	DateOfJoining            string             `json:"date_of_joining"`
+	CourseEndingDate         string             `json:"course_ending_date"`
+	CompletedSubmissionCount int64              `json:"completed"`
+	RejectedSubmissionCount  int64              `json:"rejected"`
+	ActiveSubmissionCount    int64              `json:"active"`
 }
 
 type MentorResponse struct {

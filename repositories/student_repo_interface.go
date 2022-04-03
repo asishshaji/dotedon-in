@@ -20,11 +20,13 @@ type IStudentRepository interface {
 	GetMentorByID(ctx context.Context, mentorId primitive.ObjectID) (models.Mentor, error)
 
 	UpdateTaskSubmission(ctx context.Context, task models.TaskSubmission) error
-	GetTasks(ctx context.Context, domains, sems []string) ([]models.Task, error)
-	GetTaskSubmissions(ctx context.Context, userId primitive.ObjectID) ([]models.TaskSubmission, error)
+	GetTasksBySemestersAndDomains(ctx context.Context, domains, sems []string) ([]models.Task, error)
+	GetTaskByID(ctx context.Context, taskID primitive.ObjectID) (models.Task, error)
+	GetTaskSubmissionsBySemesters(ctx context.Context, userId primitive.ObjectID, semesters []string) ([]models.TaskSubmission, error)
 	CreateTaskSubmission(ctx context.Context, task models.TaskSubmission) error
 
 	GetStudentByID(ctx context.Context, studentID primitive.ObjectID) (*models.Student, error)
+	GetSubmissionCountStat(ctx context.Context, studentID primitive.ObjectID, status models.Status) (int64, error)
 
 	GetDomains(ctx context.Context) ([]models.StaticModel, error)
 	GetColleges(ctx context.Context) ([]models.StaticModel, error)

@@ -43,15 +43,15 @@ type TaskSubmissionDTO struct {
 type TaskDTO struct {
 	ID       string `validate:"required"`
 	Semester string `json:"semester" validate:"required"`
-	Type     string `json:"type" validate:"required"`  // TYPE CAN BE RETAIL, ED-Tech
-	Title    string `json:"title" validate:"required"` // title of task
+	Domain   string `json:"domain" validate:"required"` // TYPE CAN BE RETAIL, ED-Tech
+	Title    string `json:"title" validate:"required"`  // title of task
 	Detail   string `json:"detail" validate:"required"`
 }
 
 func (tD TaskDTO) ToTask() Task {
 	return Task{
 		Semester: tD.Semester,
-		Type:     tD.Type,
+		Domain:   tD.Domain,
 		Title:    tD.Title,
 		Detail:   tD.Detail,
 	}
