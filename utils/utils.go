@@ -45,7 +45,6 @@ func (env *EnvironmentConfig) ConnectToDB() *mongo.Database {
 	env.l.Println("Starting connection to db")
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(env.DBURL))
-
 	// SetAuth(options.Credential{
 	// 	Username:      env.DBUsername,
 	// 	Password:      env.DBPassword,

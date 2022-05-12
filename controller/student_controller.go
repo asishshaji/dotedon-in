@@ -204,7 +204,7 @@ func (sC StudentController) GetData(c echo.Context) error {
 func (sC StudentController) UploadFile(c echo.Context) error {
 	image, _, _ := c.Request().FormFile("file")
 
-	url, err := sC.studentService.UploadFile(c.Request().Context(), image)
+	url, err := sC.studentService.UploadFile(c.Request().Context(), c.Get("student_id").(string), image)
 	if err != nil {
 		sC.l.Println(err)
 		return echo.ErrInternalServerError

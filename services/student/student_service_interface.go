@@ -22,7 +22,7 @@ type IStudentService interface {
 	CreateTaskSubmission(ctx context.Context, task models.TaskSubmissionDTO, userID primitive.ObjectID) error
 
 	GetData(ctx context.Context) (models.Data, error)
-	UploadFile(ctx context.Context, file multipart.File) (string, error)
+	UploadFile(ctx context.Context, folderName string, file multipart.File) (string, error)
 
 	InsertToken(ctx context.Context, tK models.TokenDto, uId primitive.ObjectID) error
 

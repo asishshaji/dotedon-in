@@ -35,8 +35,10 @@ func NewFileService(l *log.Logger) IFileService {
 	}
 }
 
-func (iS FileService) UploadFile(ctx context.Context, file multipart.File) (string, error) {
-	res, err := iS.client.Upload.Upload(ctx, file, uploader.UploadParams{})
+func (iS FileService) UploadFile(ctx context.Context, folderName string, file multipart.File) (string, error) {
+	res, err := iS.client.Upload.Upload(ctx, file, uploader.UploadParams{
+		Folder: folderName,
+	})
 	if err != nil {
 		iS.l.Println(err)
 		return "", err

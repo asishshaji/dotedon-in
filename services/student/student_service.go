@@ -346,9 +346,9 @@ func (sS StudentService) GetData(ctx context.Context) (models.Data, error) {
 	return data, nil
 }
 
-func (sS StudentService) UploadFile(ctx context.Context, file multipart.File) (string, error) {
+func (sS StudentService) UploadFile(ctx context.Context, folderName string, file multipart.File) (string, error) {
 
-	return sS.fileService.UploadFile(ctx, file)
+	return sS.fileService.UploadFile(ctx, "ad", file)
 }
 
 func (sS StudentService) InsertToken(ctx context.Context, tK models.TokenDto, uId primitive.ObjectID) error {

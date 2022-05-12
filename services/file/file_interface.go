@@ -6,5 +6,5 @@ import (
 )
 
 type IFileService interface {
-	UploadFile(ctx context.Context, file multipart.File) (string, error)
+	UploadFile(ctx context.Context, folderName string, file multipart.File) (string, error)
 }
